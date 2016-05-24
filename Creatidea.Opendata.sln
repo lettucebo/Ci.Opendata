@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25123.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Creatidea.Opendata.Schedule", "Creatidea.Opendata.Schedule\Creatidea.Opendata.Schedule.csproj", "{3594AE1C-9354-4E4F-8CDC-EFA9DAB89599}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Creatidea.Opendata.Library", "Creatidea.Opendata.Library\Creatidea.Opendata.Library.csproj", "{A6151C8A-9CA8-414B-9ECD-9BBA160228EF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Creatidea.Opendata.TaipeiBus", "Creatidea.Opendata.TaipeiBus\Creatidea.Opendata.TaipeiBus.csproj", "{7554DB31-CCC9-49B5-8698-79370F92829B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3594AE1C-9354-4E4F-8CDC-EFA9DAB89599}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3594AE1C-9354-4E4F-8CDC-EFA9DAB89599}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3594AE1C-9354-4E4F-8CDC-EFA9DAB89599}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3594AE1C-9354-4E4F-8CDC-EFA9DAB89599}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A6151C8A-9CA8-414B-9ECD-9BBA160228EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6151C8A-9CA8-414B-9ECD-9BBA160228EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6151C8A-9CA8-414B-9ECD-9BBA160228EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6151C8A-9CA8-414B-9ECD-9BBA160228EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7554DB31-CCC9-49B5-8698-79370F92829B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7554DB31-CCC9-49B5-8698-79370F92829B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7554DB31-CCC9-49B5-8698-79370F92829B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7554DB31-CCC9-49B5-8698-79370F92829B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
