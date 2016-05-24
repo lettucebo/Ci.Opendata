@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Creatidea.Opendata.Library
 {
-    public class Web
+    public class Tool
     {
         /// <summary>
         /// 讀取網頁內容

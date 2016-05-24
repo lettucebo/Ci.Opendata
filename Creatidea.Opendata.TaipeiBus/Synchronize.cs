@@ -10,9 +10,9 @@ namespace Creatidea.Opendata.TaipeiBus
 {
     public class Synchronize
     {
-        public static void EstimateTime()
+        public void EstimateTime()
         {
-            var jsonString = Library.Web.GetWebContent("http://data.taipei/bus/EstimateTime", Encoding.UTF8, gZip: true, onlyGzip: true);
+            var jsonString = Library.Tool.GetWebContent("http://data.taipei/bus/EstimateTime", Encoding.UTF8, gZip: true, onlyGzip: true);
 
             var jObject = JsonConvert.DeserializeObject<JObject>(jsonString);
 
