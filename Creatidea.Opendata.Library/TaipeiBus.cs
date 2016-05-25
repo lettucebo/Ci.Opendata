@@ -36,7 +36,7 @@ namespace Creatidea.Opendata
 
         private static string _busStopEstimateTimeKeyFormat = "r{0}s{1}";
         /// <summary>
-        /// 巴士到站時間
+        /// 巴士到站時間（單位：秒） -1：尚未發車 -2：交管不停靠 -3：末班車已過 -4：今日未營運 GoBack	去返程 （0：去程 1：返程 2：尚未發車 3：末班已駛離）
         /// </summary>
         /// <param name="routeId">路線代碼</param>
         /// <param name="stopId">站牌代碼</param>
@@ -71,17 +71,18 @@ namespace Creatidea.Opendata
             {
                 var routeId = int.Parse(item["RouteID"].ToString());
                 var stopId = int.Parse(item["StopID"].ToString());
-                var str = "s" + stopId + "r" + routeId;
+
+                var stringFormat = string.Format(_busStopEstimateTimeKeyFormat, routeId, stopId);
 
                 lock (Objlock)
                 {
-                    if (_busStopEstimateTimeList.ContainsKey(str))
+                    if (_busStopEstimateTimeList.ContainsKey(stringFormat))
                     {
-                        _busStopEstimateTimeList[str] = item;
+                        _busStopEstimateTimeList[stringFormat] = item;
                     }
                     else
                     {
-                        _busStopEstimateTimeList.Add(str, item);
+                        _busStopEstimateTimeList.Add(stringFormat, item);
                     }
                 }
             });
