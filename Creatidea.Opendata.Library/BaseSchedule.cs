@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Creatidea.Opendata.Library
+namespace Creatidea.Opendata
 {
     public interface ISchedule
     {
 
     }
+    
 
     public abstract class BaseSchedule : ISchedule
     {
@@ -25,32 +22,74 @@ namespace Creatidea.Opendata.Library
                 return executionPath;
             }
         }
-        public DateTime NextRunTime { get; set; }
-        public bool IsStart { get; set; }
-        public abstract void Run();
 
+        /// <summary>
+        /// 下次執行時間
+        /// </summary>
+        private DateTime NextRunTime { get; set; }
+
+        /// <summary>
+        /// 是否繼續執行
+        /// </summary>
+        private bool IsStart { get; set; }
+        
+        /// <summary>
+        /// 執行的方法
+        /// </summary>
+        protected abstract void Run();
+        
+        public int Month { get; set; }
+        public int Day { get; set; }
+        public int Hour { get; set; }
+        public int Minute { get; set; }
+        public int Second { get; set; }
+
+        /// <summary>
+        /// 取得下次執行時間
+        /// </summary>
+        private DateTime NextSchedule
+        {
+            get
+            {
+                var result = DateTime.Now.AddMonths(Month).AddDays(Day).AddHours(Hour).AddMinutes(Minute).AddSeconds(Second);
+
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// 開始排程
+        /// </summary>
         public void Start()
         {
             IsStart = true;
 
-            while (true)
+            NextRunTime = NextSchedule;
+
+            while (NextRunTime != DateTime.MaxValue)
             {
                 if (!IsStart)
                 {
                     break;
                 }
 
-                if (NextRunTime < DateTime.Now)
+                if (NextRunTime > DateTime.Now)
                 {
-                    Run();
+                    continue;
                 }
 
+                Run();
+                NextRunTime = NextSchedule;
                 GC.Collect();
-
-                System.Threading.Thread.Sleep(1000);
             }
         }
 
-
+        /// <summary>
+        /// 停止排程
+        /// </summary>
+        public void Stop()
+        {
+            IsStart = false;
+        }
     }
 }

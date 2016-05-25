@@ -1,25 +1,48 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Creatidea.Opendata.Library
+namespace Creatidea.Opendata
 {
-    public class TaipeiBusSchedule : BaseSchedule
+    /// <summary>
+    /// 即時資訊排程
+    /// </summary>
+    /// <seealso cref="BaseSchedule" />
+    public class TaipeiBusScheduleEstimateTime : BaseSchedule
     {
-        public override void Run()
+        protected override void Run()
         {
-            Console.WriteLine("{0}\tTaipeiBusSchedule Start.", DateTime.Now);
+            System.Diagnostics.Trace.WriteLine(string.Format("{0:yyyyMMddHHmmss}\tTaipeiBusScheduleEstimateTime Start.", DateTime.Now));
+
+            var sw = new System.Diagnostics.Stopwatch();
+            sw.Reset();//碼表歸零
+            sw.Start();//碼表開始計時
 
             var synchronize = new TaipeiBus();
 
             var jObjectEstimateTime = synchronize.EstimateTime();
 
-            synchronize.SaveEstimateTime(jObjectEstimateTime, ExecutionPath);
+            synchronize.SaveEstimateTime(jObjectEstimateTime);
 
-            Console.WriteLine("{0}\tTaipeiBusSchedule End.", DateTime.Now);
-            NextRunTime = DateTime.Now.AddSeconds(20);
+            sw.Stop();
+
+            System.Diagnostics.Trace.WriteLine(string.Format("{0:yyyyMMddHHmmss}\tTaipeiBusScheduleEstimateTime End.({1})", DateTime.Now, sw.Elapsed.TotalMilliseconds));
+        }
+    }
+
+    /// <summary>
+    /// 站牌資訊排程
+    /// </summary>
+    /// <seealso cref="BaseSchedule" />
+    public class TaipeiBusScheduleStopSign : BaseSchedule
+    {
+        protected override void Run()
+        {
+            System.Diagnostics.Trace.WriteLine(string.Format("{0:yyyyMMddHHmmss}\tTaipeiBusScheduleStopSign Start.", DateTime.Now));
+            var sw = new System.Diagnostics.Stopwatch();
+            sw.Reset();//碼表歸零
+            sw.Start();//碼表開始計時
+
+            sw.Stop();
+            System.Diagnostics.Trace.WriteLine(string.Format("{0:yyyyMMddHHmmss}\tTaipeiBusScheduleStopSign End.({1})", DateTime.Now, sw.Elapsed.TotalMilliseconds));
         }
     }
 }

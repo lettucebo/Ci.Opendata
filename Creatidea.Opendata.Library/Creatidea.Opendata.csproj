@@ -7,10 +7,11 @@
     <ProjectGuid>{A6151C8A-9CA8-414B-9ECD-9BBA160228EF}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Creatidea.Opendata.Library</RootNamespace>
-    <AssemblyName>Creatidea.Opendata.Library</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <RootNamespace>Creatidea.Opendata</RootNamespace>
+    <AssemblyName>Creatidea.Opendata</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -49,6 +50,7 @@
     <Compile Include="BaseSchedule.cs" />
     <Compile Include="TaipeiBus.cs" />
     <Compile Include="TaipeiBusSchedule.cs" />
+    <Compile Include="TaipeiParking.cs" />
     <Compile Include="Tool.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

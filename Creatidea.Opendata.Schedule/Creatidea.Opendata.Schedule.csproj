@@ -73,9 +73,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Creatidea.Opendata.Library\Creatidea.Opendata.Library.csproj">
+    <ProjectReference Include="..\Creatidea.Opendata.Library\Creatidea.Opendata.csproj">
       <Project>{a6151c8a-9ca8-414b-9ecd-9bba160228ef}</Project>
-      <Name>Creatidea.Opendata.Library</Name>
+      <Name>Creatidea.Opendata</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
