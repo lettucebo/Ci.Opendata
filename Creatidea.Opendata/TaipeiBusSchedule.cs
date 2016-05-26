@@ -8,6 +8,11 @@ namespace Creatidea.Opendata
     /// <seealso cref="BaseSchedule" />
     public class TaipeiBusScheduleEstimateTime : BaseSchedule
     {
+        protected override bool RunForStart()
+        {
+            return true;
+        }
+
         protected override void Run()
         {
             System.Diagnostics.Trace.WriteLine(string.Format("{0:yyyyMMddHHmmss}\tTaipeiBusScheduleEstimateTime Start.", DateTime.Now));
@@ -34,6 +39,11 @@ namespace Creatidea.Opendata
     /// <seealso cref="BaseSchedule" />
     public class TaipeiBusScheduleStopSign : BaseSchedule
     {
+        protected override bool RunForStart()
+        {
+            return false;
+        }
+
         protected override void Run()
         {
             System.Diagnostics.Trace.WriteLine(string.Format("{0:yyyyMMddHHmmss}\tTaipeiBusScheduleStopSign Start.", DateTime.Now));

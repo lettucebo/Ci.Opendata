@@ -5,7 +5,9 @@ VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Creatidea.Opendata.Schedule", "Creatidea.Opendata.Schedule\Creatidea.Opendata.Schedule.csproj", "{3594AE1C-9354-4E4F-8CDC-EFA9DAB89599}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Creatidea.Opendata", "Creatidea.Opendata.Library\Creatidea.Opendata.csproj", "{A6151C8A-9CA8-414B-9ECD-9BBA160228EF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Creatidea.Opendata", "Creatidea.Opendata\Creatidea.Opendata.csproj", "{A6151C8A-9CA8-414B-9ECD-9BBA160228EF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Creatidea.Opendata.Test", "Creatidea.Opendata.Test\Creatidea.Opendata.Test.csproj", "{E84091B1-243F-4360-B5E8-0FCF248E44BF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{A6151C8A-9CA8-414B-9ECD-9BBA160228EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A6151C8A-9CA8-414B-9ECD-9BBA160228EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A6151C8A-9CA8-414B-9ECD-9BBA160228EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E84091B1-243F-4360-B5E8-0FCF248E44BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E84091B1-243F-4360-B5E8-0FCF248E44BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E84091B1-243F-4360-B5E8-0FCF248E44BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E84091B1-243F-4360-B5E8-0FCF248E44BF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

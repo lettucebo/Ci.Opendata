@@ -142,7 +142,7 @@ namespace Creatidea.Opendata
         public static string GetWebContent(string url, Encoding encoding, string postData = "", bool gZip = false, bool onlyGzip = false)
         {
             var webRequest = (HttpWebRequest)WebRequest.Create(url);
-
+            webRequest.UserAgent = "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/533.4 (KHTML, like Gecko) Chrome/5.0.375.126 Safari/533.4";
             if (gZip)
             {
                 webRequest.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip,deflate");

@@ -73,7 +73,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Creatidea.Opendata.Library\Creatidea.Opendata.csproj">
+    <ProjectReference Include="..\Creatidea.Opendata\Creatidea.Opendata.csproj">
       <Project>{a6151c8a-9ca8-414b-9ecd-9bba160228ef}</Project>
       <Name>Creatidea.Opendata</Name>
     </ProjectReference>

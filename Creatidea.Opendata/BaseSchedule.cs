@@ -6,7 +6,7 @@ namespace Creatidea.Opendata
     {
 
     }
-    
+
 
     public abstract class BaseSchedule : ISchedule
     {
@@ -32,12 +32,17 @@ namespace Creatidea.Opendata
         /// 是否繼續執行
         /// </summary>
         private bool IsStart { get; set; }
-        
+
+        /// <summary>
+        /// 是否開始就執行
+        /// </summary>
+        protected abstract bool RunForStart();
+
         /// <summary>
         /// 執行的方法
         /// </summary>
         protected abstract void Run();
-        
+
         public int Month { get; set; }
         public int Day { get; set; }
         public int Hour { get; set; }
@@ -62,25 +67,32 @@ namespace Creatidea.Opendata
         /// </summary>
         public void Start()
         {
-            IsStart = true;
-
-            NextRunTime = NextSchedule;
-
-            while (NextRunTime != DateTime.MaxValue)
+            try
             {
-                if (!IsStart)
-                {
-                    break;
-                }
 
-                if (NextRunTime > DateTime.Now)
-                {
-                    continue;
-                }
+                IsStart = true;
+                NextRunTime = RunForStart() ? DateTime.Now : NextSchedule;
 
-                Run();
-                NextRunTime = NextSchedule;
-                GC.Collect();
+                while (NextRunTime != DateTime.MaxValue)
+                {
+                    if (!IsStart)
+                    {
+                        break;
+                    }
+
+                    if (NextRunTime > DateTime.Now)
+                    {
+                        continue;
+                    }
+
+                    Run();
+                    NextRunTime = NextSchedule;
+                    GC.Collect();
+                }
+            }
+            catch (Exception e)
+            {
+                System.Diagnostics.Trace.WriteLine(e.ToString());
             }
         }
 

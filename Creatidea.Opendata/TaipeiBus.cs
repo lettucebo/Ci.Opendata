@@ -27,25 +27,25 @@ namespace Creatidea.Opendata
             return jObject;
         }
 
-        private static readonly object Objlock = new object();
+        private readonly object _objlock = new object();
 
         /// <summary>
         /// 
         /// </summary>
-        private static Dictionary<string, JToken> _busStopEstimateTimeList = new Dictionary<string, JToken>();
+        private readonly Dictionary<string, JToken> _busStopEstimateTimeList = new Dictionary<string, JToken>();
 
-        private static string _busStopEstimateTimeKeyFormat = "r{0}s{1}";
+        private readonly string _busStopEstimateTimeKeyFormat = "r{0}s{1}";
         /// <summary>
         /// 巴士到站時間（單位：秒） -1：尚未發車 -2：交管不停靠 -3：末班車已過 -4：今日未營運 GoBack	去返程 （0：去程 1：返程 2：尚未發車 3：末班已駛離）
         /// </summary>
         /// <param name="routeId">路線代碼</param>
         /// <param name="stopId">站牌代碼</param>
         /// <returns></returns>
-        public static int GetEstimateTime(int routeId, int stopId)
+        public  int GetEstimateTime(int routeId, int stopId)
         {
             var stringFormat = string.Format(_busStopEstimateTimeKeyFormat, routeId, stopId);
             var inTime = int.MinValue;
-            lock (Objlock)
+            lock (_objlock)
             {
                 if (_busStopEstimateTimeList.ContainsKey(stringFormat))
                 {
@@ -55,9 +55,7 @@ namespace Creatidea.Opendata
 
             return inTime;
         }
-
-        //public static JToken 
-
+        
         public class BusStopEstimateTime
         {
             public int RouteId { get; set; }
@@ -74,7 +72,7 @@ namespace Creatidea.Opendata
 
                 var stringFormat = string.Format(_busStopEstimateTimeKeyFormat, routeId, stopId);
 
-                lock (Objlock)
+                lock (_objlock)
                 {
                     if (_busStopEstimateTimeList.ContainsKey(stringFormat))
                     {
