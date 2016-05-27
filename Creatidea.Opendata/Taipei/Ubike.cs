@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Creatidea.Opendata
+namespace Creatidea.Opendata.Taipei
 {
-    public class TaipeiUbike
+    /// <summary>
+    /// 微笑單車(Ubike)
+    /// </summary>
+    /// <seealso cref="Creatidea.Opendata.OpenData" />
+    public class Ubike : OpenData
     {
-        public JObject Ubike()
+        public override JObject Get()
         {
             var jsonString = Tool.GetWebContent("http://data.taipei/youbike", Encoding.UTF8);
 
@@ -19,8 +22,28 @@ namespace Creatidea.Opendata
             return jObject;
         }
 
-        private readonly object _objlock = new object();
-
+        public override void Save(JObject jObject)
+        {
+            Parallel.ForEach(jObject["retVal"], (items, loopState) =>
+            {
+                foreach (var item in items)
+                {
+                    var sno = Convert.ToString(item["sno"]);
+                    lock (LockObj)
+                    {
+                        if (_ubikeList.ContainsKey(sno))
+                        {
+                            _ubikeList[sno] = item;
+                        }
+                        else
+                        {
+                            _ubikeList.Add(sno, item);
+                        }
+                    }
+                }
+            });
+        }
+        
         /// <summary>
         /// 
         /// </summary>
@@ -31,10 +54,10 @@ namespace Creatidea.Opendata
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns></returns>
-        public int GetLeftUbikeSpace(string id)
+        public int GetSpace(string id)
         {
             var available = int.MinValue;
-            lock (_objlock)
+            lock (LockObj)
             {
                 if (_ubikeList.ContainsKey(id))
                 {
@@ -50,10 +73,10 @@ namespace Creatidea.Opendata
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns></returns>
-        public int GetLeftUbike(string id)
+        public int GetBike(string id)
         {
             var available = int.MinValue;
-            lock (_objlock)
+            lock (LockObj)
             {
                 if (_ubikeList.ContainsKey(id))
                 {
@@ -64,26 +87,5 @@ namespace Creatidea.Opendata
             return available;
         }
 
-        public void SaveUbike(JObject jObject)
-        {
-            Parallel.ForEach(jObject["retVal"], (items, loopState) =>
-            {
-                foreach (var item in items)
-                {
-                    var sno = Convert.ToString(item["sno"]);
-                    lock (_objlock)
-                    {
-                        if (_ubikeList.ContainsKey(sno))
-                        {
-                            _ubikeList[sno] = item;
-                        }
-                        else
-                        {
-                            _ubikeList.Add(sno, item);
-                        }
-                    }
-                }
-            });
-        }
     }
 }

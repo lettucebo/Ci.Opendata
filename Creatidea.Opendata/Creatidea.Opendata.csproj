@@ -48,10 +48,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseSchedule.cs" />
-    <Compile Include="TaipeiBus.cs" />
-    <Compile Include="TaipeiBusSchedule.cs" />
-    <Compile Include="TaipeiParking.cs" />
-    <Compile Include="TaipeiUbike.cs" />
+    <Compile Include="Taipei\Bus.cs" />
+    <Compile Include="Taipei\Parking.cs" />
+    <Compile Include="Taipei\Ubike.cs" />
     <Compile Include="Tool.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

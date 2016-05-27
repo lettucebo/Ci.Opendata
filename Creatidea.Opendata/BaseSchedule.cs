@@ -1,4 +1,5 @@
 ﻿using System;
+using Newtonsoft.Json.Linq;
 
 namespace Creatidea.Opendata
 {
@@ -7,6 +8,25 @@ namespace Creatidea.Opendata
 
     }
 
+    public abstract class OpenData
+    {
+        /// <summary>
+        /// 鎖定用物件
+        /// </summary>
+        protected object LockObj = new object();
+
+        /// <summary>
+        /// 讀取資料
+        /// </summary>
+        /// <returns></returns>
+        public abstract JObject Get();
+
+        /// <summary>
+        /// 儲存資料(記憶體)
+        /// </summary>
+        /// <param name="jObj">The j object.</param>
+        public abstract void Save(JObject jObj);
+    }
 
     public abstract class BaseSchedule : ISchedule
     {
@@ -69,7 +89,6 @@ namespace Creatidea.Opendata
         {
             try
             {
-
                 IsStart = true;
                 NextRunTime = RunForStart() ? DateTime.Now : NextSchedule;
 
@@ -85,9 +104,18 @@ namespace Creatidea.Opendata
                         continue;
                     }
 
+                    System.Diagnostics.Trace.WriteLine(string.Format("{0:yyyyMMddHHmmss}\t{1} Start.", DateTime.Now, GetType().FullName));
+
+                    var sw = new System.Diagnostics.Stopwatch();
+                    sw.Reset();//碼表歸零
+                    sw.Start();//碼表開始計時
+
                     Run();
                     NextRunTime = NextSchedule;
                     GC.Collect();
+
+                    sw.Stop();
+                    System.Diagnostics.Trace.WriteLine(string.Format("{0:yyyyMMddHHmmss}\t{1} End.({2})", DateTime.Now, GetType().FullName, sw.Elapsed.TotalMilliseconds));
                 }
             }
             catch (Exception e)

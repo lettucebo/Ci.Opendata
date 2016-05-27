@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Creatidea.Opendata.Taipei;
 
 namespace Creatidea.Opendata.Test
 {
@@ -10,7 +11,7 @@ namespace Creatidea.Opendata.Test
     {
         static void Main(string[] args)
         {
-            Creatidea.Opendata.TaipeiParking tp = new TaipeiParking();
+            var tp = new Parking();
             var s = tp.LeftParkingAvailable();
             tp.SaveLeftParkingAvailable(s);
 

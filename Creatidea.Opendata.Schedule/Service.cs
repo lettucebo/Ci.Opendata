@@ -75,8 +75,8 @@ namespace Creatidea.Opendata.Schedule
         /// </summary>
         private void Run()
         {
-            var taipeiBus = new TaipeiBusScheduleEstimateTime { Second = 2 };
-            _schedules.Add(taipeiBus, Task.Factory.StartNew(taipeiBus.Start));
+            var taipeiBusEstimateTimeSchedule = new Taipei.BusSchedule.EstimateTime { Second = 2 };
+            _schedules.Add(taipeiBusEstimateTimeSchedule, Task.Factory.StartNew(taipeiBusEstimateTimeSchedule.Start));
         }
     }
 }
