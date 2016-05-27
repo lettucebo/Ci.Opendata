@@ -53,11 +53,20 @@ namespace Creatidea.Opendata.Taipei
                 });
             }
 
+            public override void Dispose()
+            {
+                lock (LockObj)
+                {
+                    _leftParkingList.Clear();
+                    _leftParkingList = null;
+                }
+            }
+
 
             /// <summary>
-            /// 
+            /// 剩餘車位資料
             /// </summary>
-            private readonly Dictionary<string, Dictionary<string, int>> _leftParkingList = new Dictionary<string, Dictionary<string, int>>();
+            private Dictionary<string, Dictionary<string, int>> _leftParkingList = new Dictionary<string, Dictionary<string, int>>();
 
             /// <summary>
             /// 剩餘車位(汽車)

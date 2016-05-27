@@ -68,14 +68,14 @@ namespace Creatidea.Opendata.Schedule
         /// <summary>
         /// 執行序id,排程類別
         /// </summary>
-        private readonly Dictionary<BaseSchedule, Task> _schedules = new Dictionary<BaseSchedule, Task>();
+        private readonly Dictionary<OpenDataSchedule, Task> _schedules = new Dictionary<OpenDataSchedule, Task>();
 
         /// <summary>
         /// 執行
         /// </summary>
         private void Run()
         {
-            var taipeiBusEstimateTimeSchedule = new Taipei.BusSchedule.EstimateTime { Second = 2 };
+            var taipeiBusEstimateTimeSchedule = new Taipei.BusSchedule.EstimateTime { Second = 10 };
             _schedules.Add(taipeiBusEstimateTimeSchedule, Task.Factory.StartNew(taipeiBusEstimateTimeSchedule.Start));
         }
     }

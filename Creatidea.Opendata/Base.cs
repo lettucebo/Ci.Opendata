@@ -5,10 +5,11 @@ namespace Creatidea.Opendata
 {
     public interface ISchedule
     {
-
+        void Start();
+        void Stop();
     }
 
-    public abstract class OpenData
+    public abstract class OpenData: IDisposable
     {
         /// <summary>
         /// 鎖定用物件
@@ -22,13 +23,24 @@ namespace Creatidea.Opendata
         public abstract JObject Get();
 
         /// <summary>
-        /// 儲存資料(記憶體)
+        /// 儲存資料(物件)
         /// </summary>
         /// <param name="jObj">The j object.</param>
         public abstract void Save(JObject jObj);
+
+        /// <summary>
+        /// 讀取資料並存入物件
+        /// </summary>
+        public void Load()
+        {
+            var jsonObj = Get();
+            Save(jsonObj);
+        }
+
+        public abstract void Dispose();
     }
 
-    public abstract class BaseSchedule : ISchedule
+    public abstract class OpenDataSchedule : ISchedule, IDisposable
     {
         protected string ExecutionPath
         {
@@ -131,5 +143,7 @@ namespace Creatidea.Opendata
         {
             IsStart = false;
         }
+
+        public abstract void Dispose();
     }
 }

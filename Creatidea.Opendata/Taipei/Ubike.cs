@@ -43,11 +43,20 @@ namespace Creatidea.Opendata.Taipei
                 }
             });
         }
-        
+
+        public override void Dispose()
+        {
+            lock (LockObj)
+            {
+                _ubikeList.Clear();
+                _ubikeList = null;
+            }
+        }
+
         /// <summary>
-        /// 
+        /// 單車站資料
         /// </summary>
-        private readonly Dictionary<string, JToken> _ubikeList = new Dictionary<string, JToken>();
+        private Dictionary<string, JToken> _ubikeList = new Dictionary<string, JToken>();
 
         /// <summary>
         /// 剩餘車位

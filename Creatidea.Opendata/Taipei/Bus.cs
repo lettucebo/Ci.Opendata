@@ -50,6 +50,15 @@ namespace Creatidea.Opendata.Taipei
                 });
             }
 
+            public override void Dispose()
+            {
+                lock (LockObj)
+                {
+                    _busStopEstimateTimeList.Clear();
+                    _busStopEstimateTimeList = null;
+                }
+            }
+
             /// <summary>
             /// 取得到站時間(需先執行Save)
             /// </summary>
@@ -79,7 +88,7 @@ namespace Creatidea.Opendata.Taipei
             /// <summary>
             /// 到站時間Json資料
             /// </summary>
-            private readonly Dictionary<string, JToken> _busStopEstimateTimeList = new Dictionary<string, JToken>();
+            private Dictionary<string, JToken> _busStopEstimateTimeList = new Dictionary<string, JToken>();
 
         }
 
@@ -102,6 +111,11 @@ namespace Creatidea.Opendata.Taipei
             {
                 throw new NotImplementedException();
             }
+
+            public override void Dispose()
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 
@@ -113,9 +127,11 @@ namespace Creatidea.Opendata.Taipei
         /// <summary>
         /// 即時資訊排程
         /// </summary>
-        /// <seealso cref="BaseSchedule" />
-        public class EstimateTime : BaseSchedule
+        /// <seealso cref="OpenDataSchedule" />
+        public class EstimateTime : OpenDataSchedule
         {
+            private Bus.EstimateTime _main = new Bus.EstimateTime();
+
             protected override bool RunForStart()
             {
                 return true;
@@ -123,19 +139,23 @@ namespace Creatidea.Opendata.Taipei
 
             protected override void Run()
             {
-                var taipeiBusEstimateTime = new Bus.EstimateTime();
+                var jObject = _main.Get();
 
-                var jObjectEstimateTime = taipeiBusEstimateTime.Get();
+                _main.Save(jObject);
+            }
 
-                taipeiBusEstimateTime.Save(jObjectEstimateTime);
+            public override void Dispose()
+            {
+                _main.Dispose();
+                _main = null;
             }
         }
 
         /// <summary>
         /// 站牌資訊排程
         /// </summary>
-        /// <seealso cref="BaseSchedule" />
-        public class Stop : BaseSchedule
+        /// <seealso cref="OpenDataSchedule" />
+        public class Stop : OpenDataSchedule
         {
             protected override bool RunForStart()
             {
@@ -144,6 +164,11 @@ namespace Creatidea.Opendata.Taipei
 
             protected override void Run()
             {
+            }
+
+            public override void Dispose()
+            {
+                throw new NotImplementedException();
             }
         }
     }
