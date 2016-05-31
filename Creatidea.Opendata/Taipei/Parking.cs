@@ -17,7 +17,7 @@ namespace Creatidea.Opendata.Taipei
         /// </summary>
         public class Available : OpenData
         {
-            public override JObject Get()
+            public override JObject Data()
             {
                 var jsonString = Tool.GetWebContent("http://data.taipei/tcmsv/allavailable", Encoding.UTF8);
 
@@ -26,7 +26,7 @@ namespace Creatidea.Opendata.Taipei
                 return jObject;
             }
 
-            public override void Save(JObject jObj)
+            protected override void ToMemory(JObject jObj)
             {
                 Parallel.ForEach(jObj["data"]["park"], (item, loopState) =>
                 {

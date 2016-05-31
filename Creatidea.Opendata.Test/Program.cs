@@ -12,8 +12,7 @@ namespace Creatidea.Opendata.Test
         static void Main(string[] args)
         {
             var tp = new Parking.Available();
-            var s = tp.Get();
-            tp.Save(s);
+            tp.DataToMemory();
 
            //Console.WriteLine(tp.GetLeftUbike("0001"));
             Console.ReadLine();

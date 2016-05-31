@@ -20,21 +20,21 @@ namespace Creatidea.Opendata
         /// 讀取資料
         /// </summary>
         /// <returns></returns>
-        public abstract JObject Get();
+        public abstract JObject Data();
 
         /// <summary>
         /// 儲存資料(物件)
         /// </summary>
         /// <param name="jObj">The j object.</param>
-        public abstract void Save(JObject jObj);
+        protected abstract void ToMemory(JObject jObj);
 
         /// <summary>
         /// 讀取資料並存入物件
         /// </summary>
-        public void Load()
+        public void DataToMemory()
         {
-            var jsonObj = Get();
-            Save(jsonObj);
+            var jsonObj = Data();
+            ToMemory(jsonObj);
         }
 
         public abstract void Dispose();

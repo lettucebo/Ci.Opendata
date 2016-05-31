@@ -18,7 +18,7 @@ namespace Creatidea.Opendata.Taipei
         /// <seealso cref="Creatidea.Opendata.OpenData" />
         public class EstimateTime : OpenData
         {
-            public override JObject Get()
+            public override JObject Data()
             {
                 var jsonString = Tool.GetWebContent("http://data.taipei/bus/EstimateTime", Encoding.UTF8, gZip: true, onlyGzip: true);
 
@@ -27,7 +27,7 @@ namespace Creatidea.Opendata.Taipei
                 return jObject;
             }
 
-            public override void Save(JObject jObj)
+            protected override void ToMemory(JObject jObj)
             {
                 Parallel.ForEach(jObj["BusInfo"], (item, loopState) =>
                 {
@@ -60,7 +60,7 @@ namespace Creatidea.Opendata.Taipei
             }
 
             /// <summary>
-            /// 取得到站時間(需先執行Save)
+            /// 取得到站時間
             /// </summary>
             /// <param name="routeId">路線代碼</param>
             /// <param name="stopId">站牌代碼</param>
@@ -98,7 +98,7 @@ namespace Creatidea.Opendata.Taipei
         /// <seealso cref="Creatidea.Opendata.OpenData" />
         public class Stop : OpenData
         {
-            public override JObject Get()
+            public override JObject Data()
             {
                 var jsonString = Tool.GetWebContent("http://data.taipei/bus/Stop", Encoding.UTF8, gZip: true, onlyGzip: true);
 
@@ -107,7 +107,7 @@ namespace Creatidea.Opendata.Taipei
                 return jObject;
             }
 
-            public override void Save(JObject jObj)
+            protected override void ToMemory(JObject jObj)
             {
                 throw new NotImplementedException();
             }
@@ -139,9 +139,7 @@ namespace Creatidea.Opendata.Taipei
 
             protected override void Run()
             {
-                var jObject = _main.Get();
-
-                _main.Save(jObject);
+                _main.DataToMemory();
             }
 
             public override void Dispose()

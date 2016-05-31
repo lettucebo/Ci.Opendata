@@ -13,7 +13,7 @@ namespace Creatidea.Opendata.Taipei
     /// <seealso cref="Creatidea.Opendata.OpenData" />
     public class Ubike : OpenData
     {
-        public override JObject Get()
+        public override JObject Data()
         {
             var jsonString = Tool.GetWebContent("http://data.taipei/youbike", Encoding.UTF8);
 
@@ -22,7 +22,7 @@ namespace Creatidea.Opendata.Taipei
             return jObject;
         }
 
-        public override void Save(JObject jObject)
+        protected override void ToMemory(JObject jObject)
         {
             Parallel.ForEach(jObject["retVal"], (items, loopState) =>
             {
