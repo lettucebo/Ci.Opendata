@@ -11,7 +11,7 @@ namespace Creatidea.Opendata
     public class Tool
     {
         /// <summary>
-        /// 讀取網頁內容
+        /// 讀取網頁內容(zip)
         /// </summary>
         /// <param name="url">The URL.</param>
         /// <returns></returns>
@@ -64,7 +64,57 @@ namespace Creatidea.Opendata
 
             return result;
         }
-        
+
+        /// <summary>
+        /// 讀取網頁內容(gz)
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns></returns>
+        public static string GetGzFileContent(string url)
+        {
+            var result = new Dictionary<string, string>();
+            //取得日期
+            var date = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+
+            var tempPath = Path.GetTempPath();
+            if (!tempPath.EndsWith("\\"))
+            {
+                tempPath += "\\";
+            }
+            var fileName = $"temp_{date.ToString("yyyyMMdd")}_{Guid.NewGuid().ToString("N")}";
+            var downloadPath = tempPath + fileName;
+
+            #region 下載檔案
+            var webClient = new WebClient();
+            webClient.DownloadFile(url, downloadPath);
+            #endregion
+
+            #region 解壓縮
+
+            var content = string.Empty;
+            if (File.Exists(downloadPath))
+            {
+                var fi = new FileInfo(downloadPath);
+
+                using (FileStream originalFileStream = fi.OpenRead())
+                {
+                    using (GZipStream decompressionStream = new GZipStream(originalFileStream, CompressionMode.Decompress))
+                    {
+                        using (var sr = new StreamReader(decompressionStream))
+                        {
+                            content = sr.ReadToEnd();
+                        }
+                    }
+                }
+
+                File.Delete(downloadPath);
+            }
+
+            #endregion
+
+            return content;
+        }
+
         /// <summary>
         /// Simple routine to retrieve HTTP Content as a string with
         /// optional POST data and gZip encoding.
