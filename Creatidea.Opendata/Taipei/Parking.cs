@@ -20,7 +20,7 @@ namespace Creatidea.Opendata.Taipei
             public override JObject Data()
             {
                 //var jsonString = Tool.GetWebContent("http://data.taipei/tcmsv/allavailable", Encoding.UTF8);
-                var jsonString = Tool.GetGzFileContent("http://data.taipei/tcmsv/allavailable");
+                var jsonString = Tool.GetGzContent("http://data.taipei/tcmsv/allavailable", Encoding.Default);
 
                 var jObject = JsonConvert.DeserializeObject<JObject>(jsonString);
 

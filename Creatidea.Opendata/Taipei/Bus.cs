@@ -131,13 +131,8 @@ namespace Creatidea.Opendata.Taipei
         public class EstimateTime : OpenDataSchedule
         {
             private Bus.EstimateTime _main = new Bus.EstimateTime();
-
-            protected override bool RunForStart()
-            {
-                return true;
-            }
-
-            protected override void Run()
+            
+            public override void Run()
             {
                 _main.DataToMemory();
             }
@@ -155,12 +150,7 @@ namespace Creatidea.Opendata.Taipei
         /// <seealso cref="OpenDataSchedule" />
         public class Stop : OpenDataSchedule
         {
-            protected override bool RunForStart()
-            {
-                return false;
-            }
-
-            protected override void Run()
+            public override void Run()
             {
             }
 

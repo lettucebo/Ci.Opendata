@@ -1,8 +1,33 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Text;
 using Newtonsoft.Json.Linq;
 
 namespace Creatidea.Opendata
 {
+    /// <summary>
+    /// 排程類型
+    /// </summary>
+    public enum ScheduleType
+    {
+        /// <summary>
+        /// 間格時間執行
+        /// </summary>
+        None,
+        /// <summary>
+        /// 每天執行
+        /// </summary>
+        Daily,
+        /// <summary>
+        /// 每個禮拜執行
+        /// </summary>
+        Weekly,
+        /// <summary>
+        /// 每個月執行
+        /// </summary>
+        Monthly,
+    }
+
     public interface ISchedule
     {
         void Start();
@@ -42,6 +67,9 @@ namespace Creatidea.Opendata
 
     public abstract class OpenDataSchedule : ISchedule, IDisposable
     {
+        /// <summary>
+        /// 執行目錄路徑
+        /// </summary>
         protected string ExecutionPath
         {
             get
@@ -66,19 +94,42 @@ namespace Creatidea.Opendata
         private bool IsStart { get; set; }
 
         /// <summary>
-        /// 是否開始就執行
+        /// 延遲執行
         /// </summary>
-        protected abstract bool RunForStart();
+        public bool DelayStart { get; set; }
 
         /// <summary>
         /// 執行的方法
         /// </summary>
-        protected abstract void Run();
+        public abstract void Run();
 
-        public int Month { get; set; }
-        public int Day { get; set; }
+        /// <summary>
+        /// 排程模式
+        /// </summary>
+        public ScheduleType ScheduleType { get; set; }
+
+        /// <summary>
+        /// Monthly:每個月幾號 Daily:每幾天
+        /// </summary>
+        public int RunDay { get; set; }
+
+        /// <summary>
+        /// 每周星期
+        /// </summary>
+        public DayOfWeek RunWeekday { get; set; }
+
+
+        /// <summary>
+        /// 時
+        /// </summary>
         public int Hour { get; set; }
+        /// <summary>
+        /// 分
+        /// </summary>
         public int Minute { get; set; }
+        /// <summary>
+        /// 秒
+        /// </summary>
         public int Second { get; set; }
 
         /// <summary>
@@ -88,9 +139,61 @@ namespace Creatidea.Opendata
         {
             get
             {
-                var result = DateTime.Now.AddMonths(Month).AddDays(Day).AddHours(Hour).AddMinutes(Minute).AddSeconds(Second);
+                if (NextRunTime == DateTime.MinValue)
+                {
+                    //最小值 則先指定現在
+                    NextRunTime = DateTime.Now;
+                }
 
-                return result;
+                DateTime nextRunTime;
+                if (ScheduleType.None == ScheduleType)
+                {
+                    //定時排程
+                    nextRunTime = NextRunTime;
+                    while (NextRunTime >= nextRunTime)
+                    {
+                        nextRunTime = nextRunTime.AddHours(Hour).AddMinutes(Minute).AddSeconds(Second);
+                    }
+                }
+                else
+                {
+                    //固定時間
+                    nextRunTime = new DateTime(NextRunTime.Year, NextRunTime.Month, NextRunTime.Day, Hour, Minute, Second);
+                    switch (ScheduleType)
+                    {
+                        case ScheduleType.Daily:
+                            nextRunTime = nextRunTime.AddDays(RunDay);
+                            break;
+                        case ScheduleType.Weekly:
+                            //每個禮拜
+                            while (true)
+                            {
+                                nextRunTime = nextRunTime.AddDays(1);
+
+                                if (nextRunTime.DayOfWeek == RunWeekday)
+                                {
+                                    break;
+                                }
+                            }
+                            break;
+                        case ScheduleType.Monthly:
+                            //每月幾號
+                            while (true)
+                            {
+                                nextRunTime = nextRunTime.AddDays(1);
+
+                                if (nextRunTime.Day == RunDay)
+                                {
+                                    break;
+                                }
+                            }
+                            break;
+                        default:
+                            return DateTime.MaxValue;
+                    }
+                }
+
+                return nextRunTime;
             }
         }
 
@@ -99,40 +202,47 @@ namespace Creatidea.Opendata
         /// </summary>
         public void Start()
         {
-            try
-            {
-                IsStart = true;
-                NextRunTime = RunForStart() ? DateTime.Now : NextSchedule;
+            IsStart = true;
+            NextRunTime = ScheduleType == ScheduleType.None ? DateTime.Now : NextSchedule;
 
-                while (NextRunTime != DateTime.MaxValue)
+            Display($"{GetType().FullName} First Run Time {NextRunTime:yyyy/MM/dd HH:mm:ss}.");
+
+            while (NextRunTime != DateTime.MaxValue)
+            {
+                //先清除記憶體
+                GC.Collect();
+
+                if (!IsStart)
                 {
-                    if (!IsStart)
-                    {
-                        break;
-                    }
-
-                    if (NextRunTime > DateTime.Now)
-                    {
-                        continue;
-                    }
-
-                    System.Diagnostics.Trace.WriteLine(string.Format("{0:yyyyMMddHHmmss}\t{1} Start.", DateTime.Now, GetType().FullName));
-
-                    var sw = new System.Diagnostics.Stopwatch();
-                    sw.Reset();//碼表歸零
-                    sw.Start();//碼表開始計時
-
-                    Run();
-                    NextRunTime = NextSchedule;
-                    GC.Collect();
-
-                    sw.Stop();
-                    System.Diagnostics.Trace.WriteLine(string.Format("{0:yyyyMMddHHmmss}\t{1} End.({2})", DateTime.Now, GetType().FullName, sw.Elapsed.TotalMilliseconds));
+                    //已經停止運作
+                    break;
                 }
-            }
-            catch (Exception e)
-            {
-                System.Diagnostics.Trace.WriteLine(e.ToString());
+
+                if (NextRunTime > DateTime.Now)
+                {
+                    //還沒到執行時間
+                    continue;
+                }
+
+                Display($"{DateTime.Now:yyyyMMddHHmmss}\t{GetType().FullName} Start.");
+
+                var sw = new System.Diagnostics.Stopwatch();
+                sw.Reset(); //碼表歸零
+                sw.Start(); //碼表開始計時
+
+                try
+                {
+                    Run();
+                }
+                catch (Exception e)
+                {
+                    Trace(e.ToString());
+                }
+
+                NextRunTime = NextSchedule;
+
+                sw.Stop();
+                Display($"{DateTime.Now:yyyyMMddHHmmss}\t{GetType().FullName} End.({sw.Elapsed.TotalMilliseconds})");
             }
         }
 
@@ -144,6 +254,64 @@ namespace Creatidea.Opendata
             IsStart = false;
         }
 
+        /// <summary>
+        /// 釋放資源
+        /// </summary>
         public abstract void Dispose();
+
+
+        /// <summary>
+        /// 紀錄
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="str"></param>
+        public void Trace(string message, params object[] str)
+        {
+            var programName = GetType().FullName;
+            try
+            {
+                message = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "\t" + string.Format(message, str) + "\r\n";
+                var tempPath = System.IO.Path.GetTempPath();
+                if (!tempPath.EndsWith("\\"))
+                {
+                    tempPath += "\\";
+                }
+                tempPath += programName + DateTime.Now.ToString("yyyyMMdd") + ".txt";
+
+                System.IO.File.AppendAllText(tempPath, message, Encoding.UTF8);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+            try
+            {
+                var sLog = "Application";
+
+                if (!EventLog.SourceExists(programName))
+                    EventLog.CreateEventSource(programName, sLog);
+
+                EventLog.WriteEntry(programName, message, EventLogEntryType.Information, 0);
+                //EventLog.WriteEntry(programName, message);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+
+            System.Diagnostics.Trace.WriteLine(message);
+            Console.WriteLine(message);
+        }
+
+        /// <summary>
+        /// 紀錄
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="str"></param>
+        public void Display(string message, params object[] str)
+        {
+            System.Diagnostics.Trace.WriteLine(message);
+            Console.WriteLine(message);
+        }
     }
 }

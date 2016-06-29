@@ -69,45 +69,43 @@ namespace Creatidea.Opendata
         /// 讀取網頁內容(gz)
         /// </summary>
         /// <param name="url">The URL.</param>
+        /// <param name="encoding">The encoding.</param>
+        /// <param name="postData">The post data.</param>
         /// <returns></returns>
-        public static string GetGzFileContent(string url)
+        public static string GetGzContent(string url, Encoding encoding, string postData = "")
         {
-            var result = new Dictionary<string, string>();
-            //取得日期
-            var date = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+            var webRequest = (HttpWebRequest)WebRequest.Create(url);
+            webRequest.UserAgent = "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/533.4 (KHTML, like Gecko) Chrome/5.0.375.126 Safari/533.4";
 
-            var tempPath = Path.GetTempPath();
-            if (!tempPath.EndsWith("\\"))
+            if (!string.IsNullOrEmpty(postData))
             {
-                tempPath += "\\";
-            }
-            var fileName = $"temp_{date.ToString("yyyyMMdd")}_{Guid.NewGuid().ToString("N")}";
-            var downloadPath = tempPath + fileName;
+                webRequest.Method = "POST";
+                var lbPostBuffer = encoding.GetBytes(postData);
 
-            #region 下載檔案
-            var webClient = new WebClient();
-            webClient.DownloadFile(url, downloadPath);
-            #endregion
+                webRequest.ContentLength = lbPostBuffer.Length;
+
+                var postStream = webRequest.GetRequestStream();
+                postStream.Write(lbPostBuffer, 0, lbPostBuffer.Length);
+                postStream.Close();
+            }
+
+            var webResponse = (HttpWebResponse)webRequest.GetResponse();
+
+            Stream responseStream = webResponse.GetResponseStream();
 
             #region 解壓縮
 
             var content = string.Empty;
-            if (File.Exists(downloadPath))
-            {
-                var fi = new FileInfo(downloadPath);
 
-                using (FileStream originalFileStream = fi.OpenRead())
+            if (responseStream != null)
+            {
+                using (var decompressionStream = new GZipStream(responseStream, CompressionMode.Decompress))
                 {
-                    using (GZipStream decompressionStream = new GZipStream(originalFileStream, CompressionMode.Decompress))
+                    using (var sr = new StreamReader(decompressionStream, encoding))
                     {
-                        using (var sr = new StreamReader(decompressionStream))
-                        {
-                            content = sr.ReadToEnd();
-                        }
+                        content = sr.ReadToEnd();
                     }
                 }
-
-                File.Delete(downloadPath);
             }
 
             #endregion

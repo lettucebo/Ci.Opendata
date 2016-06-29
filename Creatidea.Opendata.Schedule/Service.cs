@@ -14,21 +14,27 @@ namespace Creatidea.Opendata.Schedule
     {
         #region 服務
 
+        /// <summary>
+        /// 初始化
+        /// </summary>
         public Service()
         {
             InitializeComponent();
+
+            //加入需要排程的服務
+            _scheduleList.Add(new Taipei.BusSchedule.EstimateTime { ScheduleType = ScheduleType.None, Second = 5 });
         }
 
         protected override void OnStart(string[] args)
         {
-            Console.WriteLine("SERVICE IS START");
+            Console.WriteLine(@"SERVICE IS START");
 
             Run();
         }
 
         protected override void OnStop()
         {
-            Console.Write("WAIT SERVICE STOP...");
+            Console.Write(@"WAIT SERVICE STOP...");
 
             foreach (var schedule in _schedules.Keys)
             {
@@ -64,7 +70,10 @@ namespace Creatidea.Opendata.Schedule
             OnStop();
         }
         #endregion
-
+        /// <summary>
+        /// 執行序id,排程類別
+        /// </summary>
+        private readonly List<OpenDataSchedule> _scheduleList = new List<OpenDataSchedule>();
         /// <summary>
         /// 執行序id,排程類別
         /// </summary>
@@ -75,8 +84,21 @@ namespace Creatidea.Opendata.Schedule
         /// </summary>
         private void Run()
         {
-            var taipeiBusEstimateTimeSchedule = new Taipei.BusSchedule.EstimateTime { Second = 10 };
-            _schedules.Add(taipeiBusEstimateTimeSchedule, Task.Factory.StartNew(taipeiBusEstimateTimeSchedule.Start));
+            foreach (var schedule in _scheduleList)
+            {
+                _schedules.Add(schedule, Task.Factory.StartNew(schedule.Start));
+            }
+        }
+
+        /// <summary>
+        /// 執行一次
+        /// </summary>
+        public void RunOnce()
+        {
+            foreach (var schedule in _scheduleList)
+            {
+                _schedules.Add(schedule, Task.Factory.StartNew(schedule.Run));
+            }
         }
     }
 }
