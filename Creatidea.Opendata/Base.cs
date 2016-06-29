@@ -209,9 +209,6 @@ namespace Creatidea.Opendata
 
             while (NextRunTime != DateTime.MaxValue)
             {
-                //先清除記憶體
-                GC.Collect();
-
                 if (!IsStart)
                 {
                     //已經停止運作
@@ -223,6 +220,9 @@ namespace Creatidea.Opendata
                     //還沒到執行時間
                     continue;
                 }
+
+                //先清除記憶體
+                GC.Collect();
 
                 Display($"{DateTime.Now:yyyyMMddHHmmss}\t{GetType().FullName} Start.");
 

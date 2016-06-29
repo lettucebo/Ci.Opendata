@@ -29,6 +29,9 @@ namespace Creatidea.Opendata.Taipei
 
             protected override void ToMemory(JObject jObj)
             {
+                object newLock = new object();
+                var busStopEstimateTimeList = new Dictionary<string, JToken>();
+
                 Parallel.ForEach(jObj["BusInfo"], (item, loopState) =>
                 {
                     var routeId = int.Parse(item["RouteID"].ToString());
@@ -36,18 +39,23 @@ namespace Creatidea.Opendata.Taipei
 
                     var stringFormat = string.Format(BusStopEstimateTimeKeyFormat, routeId, stopId);
 
-                    lock (LockObj)
+                    lock (newLock)
                     {
-                        if (_busStopEstimateTimeList.ContainsKey(stringFormat))
+                        if (busStopEstimateTimeList.ContainsKey(stringFormat))
                         {
-                            _busStopEstimateTimeList[stringFormat] = item;
+                            busStopEstimateTimeList[stringFormat] = item;
                         }
                         else
                         {
-                            _busStopEstimateTimeList.Add(stringFormat, item);
+                            busStopEstimateTimeList.Add(stringFormat, item);
                         }
                     }
                 });
+
+                lock (LockObj)
+                {
+                    _busStopEstimateTimeList = busStopEstimateTimeList;
+                }
             }
 
             public override void Dispose()
@@ -131,7 +139,7 @@ namespace Creatidea.Opendata.Taipei
         public class EstimateTime : OpenDataSchedule
         {
             private Bus.EstimateTime _main = new Bus.EstimateTime();
-            
+
             public override void Run()
             {
                 _main.DataToMemory();
