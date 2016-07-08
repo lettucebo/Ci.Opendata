@@ -67,17 +67,17 @@ namespace Creatidea.Opendata.Taipei
             /// <summary>
             /// 剩餘車位資料
             /// </summary>
-            private Dictionary<string, Dictionary<string, int>> _leftParkingList = new Dictionary<string, Dictionary<string, int>>();
+            private static Dictionary<string, Dictionary<string, int>> _leftParkingList = new Dictionary<string, Dictionary<string, int>>();
 
             /// <summary>
             /// 剩餘車位(汽車)
             /// </summary>
             /// <param name="id">The identifier.</param>
             /// <returns></returns>
-            public int GetCar(string id)
+            public static int GetCar(string id)
             {
                 var available = -1;
-                lock (LockObj)
+                lock (StaticLockObj)
                 {
                     if (_leftParkingList.ContainsKey(id))
                     {
@@ -93,10 +93,10 @@ namespace Creatidea.Opendata.Taipei
             /// </summary>
             /// <param name="id">The identifier.</param>
             /// <returns></returns>
-            public int GetMotor(string id)
+            public static int GetMotor(string id)
             {
                 var available = -1;
-                lock (LockObj)
+                lock (StaticLockObj)
                 {
                     if (_leftParkingList.ContainsKey(id))
                     {

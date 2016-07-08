@@ -73,11 +73,11 @@ namespace Creatidea.Opendata.Taipei
             /// <param name="routeId">路線代碼</param>
             /// <param name="stopId">站牌代碼</param>
             /// <returns>巴士到站時間（單位：秒） -1：尚未發車 -2：交管不停靠 -3：末班車已過 -4：今日未營運 GoBack	去返程 （0：去程 1：返程 2：尚未發車 3：末班已駛離）</returns>
-            public int Get(int routeId, int stopId)
+            public static int Get(int routeId, int stopId)
             {
                 var stringFormat = string.Format(BusStopEstimateTimeKeyFormat, routeId, stopId);
                 var inTime = int.MinValue;
-                lock (LockObj)
+                lock (StaticLockObj)
                 {
                     if (_busStopEstimateTimeList.ContainsKey(stringFormat))
                     {
@@ -96,7 +96,7 @@ namespace Creatidea.Opendata.Taipei
             /// <summary>
             /// 到站時間Json資料
             /// </summary>
-            private Dictionary<string, JToken> _busStopEstimateTimeList = new Dictionary<string, JToken>();
+            private static Dictionary<string, JToken> _busStopEstimateTimeList = new Dictionary<string, JToken>();
 
         }
 

@@ -56,22 +56,20 @@ namespace Creatidea.Opendata.Taipei
         /// <summary>
         /// 單車站資料
         /// </summary>
-        private Dictionary<string, JToken> _ubikeList = new Dictionary<string, JToken>();
+        private static Dictionary<string, JToken> _ubikeList = new Dictionary<string, JToken>();
 
         /// <summary>
         /// 剩餘車位
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns></returns>
-        public int GetSpace(string id)
+        public static int GetSpace(string id)
         {
             var available = int.MinValue;
-            lock (LockObj)
+
+            if (_ubikeList.ContainsKey(id))
             {
-                if (_ubikeList.ContainsKey(id))
-                {
-                    available = int.Parse(Convert.ToString(_ubikeList[id]["bemp"]));
-                }
+                available = int.Parse(Convert.ToString(_ubikeList[id]["bemp"]));
             }
 
             return available;
@@ -82,10 +80,10 @@ namespace Creatidea.Opendata.Taipei
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns></returns>
-        public int GetBike(string id)
+        public static int GetBike(string id)
         {
             var available = int.MinValue;
-            lock (LockObj)
+            lock (StaticLockObj)
             {
                 if (_ubikeList.ContainsKey(id))
                 {

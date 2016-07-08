@@ -11,10 +11,21 @@ namespace Creatidea.Opendata.Test
     {
         static void Main(string[] args)
         {
-            var tp = new Parking.Available();
-            tp.DataToMemory();
+            var o = new List<OpenData>
+            {
+                new Weather.Cwb(),
+                new Weather.EpaUv(),
+                new Weather.Cwb()
+            };
+            Parallel.ForEach(o, (openData, loopState) =>
+            {
+                OpenData.GetNow(openData, 10);
+                OpenData.GetNow(openData, 30);
+                OpenData.GetNow(openData, 20);
+            });
+            var s = Weather.Cwb.Get;
 
-           //Console.WriteLine(tp.GetLeftUbike("0001"));
+            //Console.WriteLine(tp.GetLeftUbike("0001"));
             Console.ReadLine();
         }
     }

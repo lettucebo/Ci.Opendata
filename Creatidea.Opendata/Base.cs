@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Newtonsoft.Json.Linq;
 
@@ -34,12 +37,189 @@ namespace Creatidea.Opendata
         void Stop();
     }
 
-    public abstract class OpenData: IDisposable
+    public abstract class BaseClass
     {
+        /// <summary>
+        /// 現在執行的類別名稱
+        /// </summary>
+        protected string ClassName
+        {
+            get
+            {
+                return $"{GetType().FullName}";
+            }
+        }
+
+        /// <summary>
+        /// 紀錄
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="str"></param>
+        public void Trace(string message, params object[] str)
+        {
+            var programName = GetType().FullName;
+            try
+            {
+                message = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "\t" + string.Format(message, str) + "\r\n";
+                var tempPath = System.IO.Path.GetTempPath();
+                if (!tempPath.EndsWith("\\"))
+                {
+                    tempPath += "\\";
+                }
+                tempPath += programName + DateTime.Now.ToString("yyyyMMdd") + ".txt";
+
+                System.IO.File.AppendAllText(tempPath, message, Encoding.UTF8);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+            try
+            {
+                var sLog = "Application";
+
+                if (!EventLog.SourceExists(programName))
+                    EventLog.CreateEventSource(programName, sLog);
+
+                EventLog.WriteEntry(programName, message, EventLogEntryType.Information, 0);
+                //EventLog.WriteEntry(programName, message);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+
+            System.Diagnostics.Trace.WriteLine(message);
+            Console.WriteLine(message);
+        }
+
+        /// <summary>
+        /// 紀錄
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="str"></param>
+        public void Display(string message, params object[] str)
+        {
+            System.Diagnostics.Trace.WriteLine(message);
+            Console.WriteLine(message);
+        }
+
         /// <summary>
         /// 鎖定用物件
         /// </summary>
-        protected object LockObj = new object();
+        private static readonly Dictionary<string, object> LockObjList = new Dictionary<string, object>();
+
+        protected object LockObj
+        {
+            get
+            {
+                if (!LockObjList.ContainsKey(ClassName))
+                {
+                    LockObjList.Add(ClassName, new object());
+                }
+                return LockObjList[ClassName];
+            }
+        }
+
+        protected static object StaticLockObj
+        {
+            get
+            {
+                if (!LockObjList.ContainsKey("StaticLockObj"))
+                {
+                    LockObjList.Add("StaticLockObj", new object());
+                }
+
+                return LockObjList["StaticLockObj"];
+            }
+        }
+
+        //protected static object StaticLockObj(string className)
+        //{
+        //    if (!LockObjList.ContainsKey(className))
+        //    {
+        //        LockObjList.Add(className, new object());
+        //    }
+
+        //    return LockObjList[className];
+        //}
+    }
+
+    public abstract class OpenData : BaseClass, IDisposable
+    {
+        /// <summary>
+        /// 即時資訊最後更新時間
+        /// </summary>
+        private static readonly Dictionary<string, DateTime> LastUpdateList = new Dictionary<string, DateTime>();
+
+        /// <summary>
+        /// 即時資訊最後更新時間
+        /// </summary>
+        public DateTime LastUpdate
+        {
+            get
+            {
+                lock (LockObj)
+                {
+                    if (!LastUpdateList.ContainsKey(ClassName))
+                    {
+                        return DateTime.MinValue;
+                    }
+                    return LastUpdateList[ClassName];
+                }
+            }
+            set
+            {
+                lock (LockObj)
+                {
+                    if (!LastUpdateList.ContainsKey(ClassName))
+                    {
+                        LastUpdateList.Add(ClassName, value);
+                    }
+                    else
+                    {
+                        LastUpdateList[ClassName] = value;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 更新頻率(秒)
+        /// </summary>
+        private static readonly Dictionary<string, double> IntervalList = new Dictionary<string, double>();
+
+        /// <summary>
+        /// 設定更新頻率(秒)
+        /// </summary>
+        public double Interval
+        {
+            get
+            {
+                lock (LockObj)
+                {
+                    if (!IntervalList.ContainsKey(ClassName))
+                    {
+                        return 0;
+                    }
+                    return IntervalList[ClassName];
+                }
+            }
+            set
+            {
+                lock (LockObj)
+                {
+                    if (!IntervalList.ContainsKey(ClassName))
+                    {
+                        IntervalList.Add(ClassName, value);
+                    }
+                    else
+                    {
+                        IntervalList[ClassName] = value;
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// 讀取資料
@@ -58,14 +238,44 @@ namespace Creatidea.Opendata
         /// </summary>
         public void DataToMemory()
         {
-            var jsonObj = Data();
-            ToMemory(jsonObj);
+            lock (LockObj)
+            {
+                var needUpdate = false;
+                if (Interval > 0)
+                {
+                    if (LastUpdate < DateTime.Now.AddSeconds(-Interval))
+                    {
+                        needUpdate = true;
+                    }
+                }
+                else
+                {
+                    needUpdate = true;
+                }
+
+                if (needUpdate)
+                {
+                    var jsonObj = Data();
+                    ToMemory(jsonObj);
+
+                    LastUpdate = DateTime.Now;
+                }
+            }
         }
 
         public abstract void Dispose();
+
+        /// <summary>
+        /// 馬上抓取資料
+        /// </summary>
+        public static void GetNow(OpenData opendata, double interval = 0)
+        {
+            opendata.Interval = interval;
+            opendata.DataToMemory();
+        }
     }
 
-    public abstract class OpenDataSchedule : ISchedule, IDisposable
+    public abstract class OpenDataSchedule : BaseClass, ISchedule, IDisposable
     {
         /// <summary>
         /// 執行目錄路徑
@@ -205,7 +415,7 @@ namespace Creatidea.Opendata
             IsStart = true;
             NextRunTime = ScheduleType == ScheduleType.None ? DateTime.Now : NextSchedule;
 
-            Display($"{GetType().FullName} First Run Time {NextRunTime:yyyy/MM/dd HH:mm:ss}.");
+            Display($"{ClassName} First Run Time {NextRunTime:yyyy/MM/dd HH:mm:ss}.");
 
             while (NextRunTime != DateTime.MaxValue)
             {
@@ -224,7 +434,7 @@ namespace Creatidea.Opendata
                 //先清除記憶體
                 GC.Collect();
 
-                Display($"{DateTime.Now:yyyyMMddHHmmss}\t{GetType().FullName} Start.");
+                Display($"{DateTime.Now:yyyyMMddHHmmss}\t{ClassName} Start.");
 
                 var sw = new System.Diagnostics.Stopwatch();
                 sw.Reset(); //碼表歸零
@@ -242,7 +452,7 @@ namespace Creatidea.Opendata
                 NextRunTime = NextSchedule;
 
                 sw.Stop();
-                Display($"{DateTime.Now:yyyyMMddHHmmss}\t{GetType().FullName} End.({sw.Elapsed.TotalMilliseconds})");
+                Display($"{DateTime.Now:yyyyMMddHHmmss}\t{ClassName} End.({sw.Elapsed.TotalMilliseconds})");
             }
         }
 
@@ -260,58 +470,6 @@ namespace Creatidea.Opendata
         public abstract void Dispose();
 
 
-        /// <summary>
-        /// 紀錄
-        /// </summary>
-        /// <param name="message"></param>
-        /// <param name="str"></param>
-        public void Trace(string message, params object[] str)
-        {
-            var programName = GetType().FullName;
-            try
-            {
-                message = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "\t" + string.Format(message, str) + "\r\n";
-                var tempPath = System.IO.Path.GetTempPath();
-                if (!tempPath.EndsWith("\\"))
-                {
-                    tempPath += "\\";
-                }
-                tempPath += programName + DateTime.Now.ToString("yyyyMMdd") + ".txt";
 
-                System.IO.File.AppendAllText(tempPath, message, Encoding.UTF8);
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
-            try
-            {
-                var sLog = "Application";
-
-                if (!EventLog.SourceExists(programName))
-                    EventLog.CreateEventSource(programName, sLog);
-
-                EventLog.WriteEntry(programName, message, EventLogEntryType.Information, 0);
-                //EventLog.WriteEntry(programName, message);
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
-
-            System.Diagnostics.Trace.WriteLine(message);
-            Console.WriteLine(message);
-        }
-
-        /// <summary>
-        /// 紀錄
-        /// </summary>
-        /// <param name="message"></param>
-        /// <param name="str"></param>
-        public void Display(string message, params object[] str)
-        {
-            System.Diagnostics.Trace.WriteLine(message);
-            Console.WriteLine(message);
-        }
     }
 }

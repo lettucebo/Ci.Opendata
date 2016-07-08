@@ -70,10 +70,12 @@ namespace Creatidea.Opendata.Schedule
             OnStop();
         }
         #endregion
+
         /// <summary>
         /// 執行序id,排程類別
         /// </summary>
         private readonly List<OpenDataSchedule> _scheduleList = new List<OpenDataSchedule>();
+
         /// <summary>
         /// 執行序id,排程類別
         /// </summary>
