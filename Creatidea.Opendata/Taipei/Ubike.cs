@@ -13,6 +13,8 @@ namespace Creatidea.Opendata.Taipei
     /// <seealso cref="Creatidea.Opendata.OpenData" />
     public class Ubike : OpenData
     {
+        private static object _staticLockObj = new object();
+
         public override JObject Data()
         {
             var jsonString = Tool.GetWebContent("http://data.taipei/youbike", Encoding.UTF8);
@@ -22,7 +24,7 @@ namespace Creatidea.Opendata.Taipei
             return jObject;
         }
 
-        protected override void ToMemory(JObject jObject)
+        protected override void Save(JObject jObject)
         {
             Parallel.ForEach(jObject["retVal"], (items, loopState) =>
             {
@@ -83,7 +85,7 @@ namespace Creatidea.Opendata.Taipei
         public static int GetBike(string id)
         {
             var available = int.MinValue;
-            lock (StaticLockObj)
+            lock (_staticLockObj)
             {
                 if (_ubikeList.ContainsKey(id))
                 {

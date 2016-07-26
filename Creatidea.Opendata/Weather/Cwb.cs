@@ -13,6 +13,8 @@ namespace Creatidea.Opendata.Weather
     /// </summary>
     public class Cwb : OpenData
     {
+        private static object _staticLockObj = new object();
+
         public override JObject Data()
         {
             //http://opendata.cwb.gov.tw/datalist
@@ -38,7 +40,7 @@ namespace Creatidea.Opendata.Weather
             }
         }
 
-        protected override void ToMemory(JObject jObj)
+        protected override void Save(JObject jObj)
         {
             var jObject = JsonConvert.DeserializeObject<List<WatherModel>>(jObj["cwbopendata"]["dataset"]["location"].ToString());
             lock (LockObj)
@@ -53,7 +55,7 @@ namespace Creatidea.Opendata.Weather
         {
             get
             {
-                lock (StaticLockObj)
+                lock (_staticLockObj)
                 {
                     return WatherData;
                 }

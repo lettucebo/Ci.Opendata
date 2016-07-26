@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -121,28 +122,6 @@ namespace Creatidea.Opendata
             }
         }
 
-        protected static object StaticLockObj
-        {
-            get
-            {
-                if (!LockObjList.ContainsKey("StaticLockObj"))
-                {
-                    LockObjList.Add("StaticLockObj", new object());
-                }
-
-                return LockObjList["StaticLockObj"];
-            }
-        }
-
-        //protected static object StaticLockObj(string className)
-        //{
-        //    if (!LockObjList.ContainsKey(className))
-        //    {
-        //        LockObjList.Add(className, new object());
-        //    }
-
-        //    return LockObjList[className];
-        //}
     }
 
     public abstract class OpenData : BaseClass, IDisposable
@@ -231,12 +210,12 @@ namespace Creatidea.Opendata
         /// 儲存資料(物件)
         /// </summary>
         /// <param name="jObj">The j object.</param>
-        protected abstract void ToMemory(JObject jObj);
+        protected abstract void Save(JObject jObj);
 
         /// <summary>
         /// 讀取資料並存入物件
         /// </summary>
-        public void DataToMemory()
+        public void DataSave()
         {
             lock (LockObj)
             {
@@ -256,7 +235,7 @@ namespace Creatidea.Opendata
                 if (needUpdate)
                 {
                     var jsonObj = Data();
-                    ToMemory(jsonObj);
+                    Save(jsonObj);
 
                     LastUpdate = DateTime.Now;
                 }
@@ -271,8 +250,16 @@ namespace Creatidea.Opendata
         public static void GetNow(OpenData opendata, double interval = 0)
         {
             opendata.Interval = interval;
-            opendata.DataToMemory();
+            opendata.DataSave();
         }
+
+    }
+
+
+    public abstract class OpenDataDataBase : OpenData
+    {
+        protected string ConnectionString = ConfigurationManager.ConnectionStrings["OpenData"].ConnectionString;
+        protected int TimeOut = 3600;
     }
 
     public abstract class OpenDataSchedule : BaseClass, ISchedule, IDisposable

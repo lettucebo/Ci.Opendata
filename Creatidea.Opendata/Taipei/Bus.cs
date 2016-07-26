@@ -18,6 +18,8 @@ namespace Creatidea.Opendata.Taipei
         /// <seealso cref="Creatidea.Opendata.OpenData" />
         public class EstimateTime : OpenData
         {
+            private static object _staticLockObj = new object();
+
             public override JObject Data()
             {
                 var jsonString = Tool.GetWebContent("http://data.taipei/bus/EstimateTime", Encoding.UTF8, gZip: true, onlyGzip: true);
@@ -27,7 +29,7 @@ namespace Creatidea.Opendata.Taipei
                 return jObject;
             }
 
-            protected override void ToMemory(JObject jObj)
+            protected override void Save(JObject jObj)
             {
                 object newLock = new object();
                 var busStopEstimateTimeList = new Dictionary<string, JToken>();
@@ -77,7 +79,7 @@ namespace Creatidea.Opendata.Taipei
             {
                 var stringFormat = string.Format(BusStopEstimateTimeKeyFormat, routeId, stopId);
                 var inTime = int.MinValue;
-                lock (StaticLockObj)
+                lock (_staticLockObj)
                 {
                     if (_busStopEstimateTimeList.ContainsKey(stringFormat))
                     {
@@ -115,7 +117,7 @@ namespace Creatidea.Opendata.Taipei
                 return jObject;
             }
 
-            protected override void ToMemory(JObject jObj)
+            protected override void Save(JObject jObj)
             {
                 throw new NotImplementedException();
             }
@@ -142,7 +144,7 @@ namespace Creatidea.Opendata.Taipei
 
             public override void Run()
             {
-                _main.DataToMemory();
+                _main.DataSave();
             }
 
             public override void Dispose()

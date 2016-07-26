@@ -13,6 +13,8 @@ namespace Creatidea.Opendata.Weather
     /// </summary>
     public class EpaUv : OpenData
     {
+        private static object _staticLockObj = new object();
+
         public class UvModel
         {
             public string SiteName { get; set; }
@@ -46,7 +48,7 @@ namespace Creatidea.Opendata.Weather
             }
         }
 
-        protected override void ToMemory(JObject jObj)
+        protected override void Save(JObject jObj)
         {
             var jObject = JsonConvert.DeserializeObject<List<UvModel>>(jObj["UV"]["Data"].ToString());
             lock (LockObj)
@@ -61,7 +63,7 @@ namespace Creatidea.Opendata.Weather
         {
             get
             {
-                lock (StaticLockObj)
+                lock (_staticLockObj)
                 {
                     return UvData;
                 }
