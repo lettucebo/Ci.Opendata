@@ -264,14 +264,64 @@ namespace Creatidea.Opendata
     /// <seealso cref="Creatidea.Opendata.OpenData" />
     public abstract class OpenDataDataBase : OpenData
     {
-        protected string ConnectionString = ConfigurationManager.ConnectionStrings["OpenData"].ConnectionString;
+        /// <summary>
+        /// 連線字串(可在Config appSettings增加 OpenData.ConnectionStringName 指定共用的連線字串)
+        /// </summary>
+        protected string ConnectionString
+        {
+            get
+            {
+                var connectionStringKeyWord = "OpenData";
+
+                if (!string.IsNullOrEmpty(ConfigurationManager.AppSettings["OpenData.ConnectionStringName"]))
+                {
+                    connectionStringKeyWord = ConfigurationManager.AppSettings["Creatidea.OpenData.ConnectionStrings"];
+                }
+
+                var connectionString = ConfigurationManager.ConnectionStrings[connectionStringKeyWord].ConnectionString;
+
+                if (connectionString.StartsWith("metadata="))
+                {
+                    var connectionStringArray = connectionString.Split(new[] { "\"" }, StringSplitOptions.RemoveEmptyEntries);
+
+                    connectionString = string.Empty;
+
+                    var isFrist = true;
+                    foreach (var str in connectionStringArray)
+                    {
+                        if (isFrist)
+                        {
+                            isFrist = false;
+                            continue;
+                        }
+
+                        connectionString += str;
+                    }
+                }
+
+                return connectionString;
+            }
+
+        }
+
+        /// <summary>
+        /// 資料庫連線逾時時間
+        /// </summary>
         protected int TimeOut = 3600;
-        
+
+        /// <summary>
+        /// 資料表名稱
+        /// </summary>
         protected abstract string TableName();
+        /// <summary>
+        /// 建立資料表的SQL指令
+        /// </summary>
         protected abstract string CreateTableSqlString();
 
+        /// <summary>
+        /// BlukCopy用的DataTable
+        /// </summary>
         protected abstract DataTable ImportTable();
-
 
         /// <summary>
         /// 建立新TABLE
@@ -349,7 +399,7 @@ namespace Creatidea.Opendata
         protected override void Save(JObject jObj)
         {
             var table = Resolve(jObj);
-
+            
             CreateDataTable();
 
             SaveToDatabase(table);
@@ -362,6 +412,9 @@ namespace Creatidea.Opendata
         /// <returns></returns>
         protected abstract DataTable Resolve(JObject jObj);
 
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
         public override void Dispose()
         {
         }
@@ -373,6 +426,13 @@ namespace Creatidea.Opendata
     /// <seealso cref="Creatidea.Opendata.OpenDataDataBase" />
     public abstract class OpenDataDataBaseLocation : OpenDataDataBase
     {
+        /// <summary>
+        /// 取得資料(使用地理座標)
+        /// </summary>
+        /// <param name="lat">緯度</param>
+        /// <param name="lng">經度</param>
+        /// <param name="locationRadius">範圍(KM)</param>
+        /// <returns></returns>
         public DataTable GetByLatLng(float lat, float lng, int locationRadius)
         {
             DataTable table = null;
