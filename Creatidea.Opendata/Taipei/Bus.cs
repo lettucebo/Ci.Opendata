@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -106,7 +107,7 @@ namespace Creatidea.Opendata.Taipei
         /// 站牌
         /// </summary>
         /// <seealso cref="Creatidea.Opendata.OpenData" />
-        public class Stop : OpenData
+        public class Stop : OpenDataDataBaseLocation
         {
             public override JObject Data()
             {
@@ -117,14 +118,404 @@ namespace Creatidea.Opendata.Taipei
                 return jObject;
             }
 
-            protected override void Save(JObject jObj)
+            protected override string TableName()
             {
-                throw new NotImplementedException();
+                return "TaipeiBusStop";
             }
 
-            public override void Dispose()
+            protected override string CreateTableSqlString()
             {
-                throw new NotImplementedException();
+                return @"
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[TaipeiBusStop]') AND type in (N'U'))
+BEGIN
+CREATE TABLE [dbo].[TaipeiBusStop](
+	[Id] [int] NOT NULL,
+	[RouteId] [int] NULL,
+	[Name] [nvarchar](50) NULL,
+	[NameEn] [nvarchar](100) NULL,
+	[SeqNo] [int] NULL,
+	[Pgp] [int] NULL,
+	[GoBack] [int] NULL,
+	[StopLocationId] [int] NULL,
+	[Vector] [int] NULL,
+	[Latitude] [float] NULL,
+	[Longitude] [float] NULL,
+ CONSTRAINT [PK_TaipeiBusStop] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+END
+
+";
+            }
+
+            protected override DataTable ImportTable()
+            {
+                var dataTable = new DataTable();
+                dataTable.Columns.Add("Id", typeof(int));
+                dataTable.Columns.Add("RouteId", typeof(int));
+                dataTable.Columns.Add("Name", typeof(string));
+                dataTable.Columns.Add("NameEn", typeof(string));
+                dataTable.Columns.Add("SeqNo", typeof(int));
+                dataTable.Columns.Add("Pgp", typeof(int));
+                dataTable.Columns.Add("GoBack", typeof(int));
+                dataTable.Columns.Add("StopLocationId", typeof(int));
+                dataTable.Columns.Add("Vector", typeof(int));
+
+                dataTable.Columns.Add("Latitude", typeof(float));
+                dataTable.Columns.Add("Longitude", typeof(float));
+
+                return dataTable;
+            }
+
+            protected override DataTable Resolve(JObject jObj)
+            {
+                var list = JsonConvert.DeserializeObject<List<BusStopEntity>>(jObj["BusInfo"].ToString());
+
+                var dataTable = ImportTable();
+                foreach (var item in list)
+                {
+                    var row = dataTable.NewRow();
+
+                    row["Id"] = item.Id;
+                    row["RouteId"] = item.RouteId;
+                    row["Name"] = item.Name;
+                    row["NameEn"] = item.NameEn;
+                    row["SeqNo"] = item.SeqNo;
+                    if (item.Pgp.HasValue)
+                    {
+                        row["Pgp"] = item.Pgp.Value;
+                    }
+                    else
+                    {
+                        row["Pgp"] = DBNull.Value;
+                    }
+                    row["GoBack"] = item.GoBack;
+                    row["StopLocationId"] = item.StopLocationId;
+
+                    if (item.Vector.HasValue)
+                    {
+                        row["Vector"] = item.Vector.Value;
+                    }
+                    else
+                    {
+                        row["Vector"] = DBNull.Value;
+                    }
+
+                    row["Latitude"] = item.Latitude;
+                    row["Longitude"] = item.Longitude;
+
+                    dataTable.Rows.Add(row);
+                }
+
+                return dataTable;
+            }
+
+            public class BusStopEntity
+            {
+                /// <summary>
+                /// 站牌代碼
+                /// </summary>
+                public int Id { get; set; }
+                /// <summary>
+                /// 所屬路線代碼 (主路線 ID) 
+                /// </summary>
+                public int RouteId { get; set; }
+                /// <summary>
+                /// 中文名稱
+                /// </summary>
+                [JsonProperty("NameZh")]
+                public string Name { get; set; }
+                /// <summary>
+                /// 英文名稱
+                /// </summary>
+                public string NameEn { get; set; }
+                /// <summary>
+                /// 於路線上的順序
+                /// </summary>
+                public int SeqNo { get; set; }
+                /// <summary>
+                /// 上下車站別
+                /// </summary>
+                public int? Pgp { get; set; }
+                /// <summary>
+                /// 去返程
+                /// </summary>
+                public int GoBack { get; set; }
+                /// <summary>
+                /// 站位 ID
+                /// </summary>
+                public int StopLocationId { get; set; }
+                /// <summary>
+                /// 向量角：0~359，預設為空白
+                /// </summary>
+                public int? Vector { get; set; }
+                /// <summary>
+                /// 緯度 
+                /// </summary>
+                [JsonProperty("showLat")]
+                public float Latitude { get; set; }
+                /// <summary>
+                /// 經度
+                /// </summary>
+                [JsonProperty("showLon")]
+                public float Longitude { get; set; }
+            }
+        }
+
+        public class Route : OpenDataDataBase
+        {
+            public override JObject Data()
+            {
+                var jsonString = Tool.GetWebContent("http://data.taipei/bus/ROUTE", Encoding.UTF8, gZip: true, onlyGzip: true);
+
+                var jObject = JsonConvert.DeserializeObject<JObject>(jsonString);
+
+                return jObject;
+            }
+
+            protected override string CreateTableSqlString()
+            {
+                return @"
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[TaipeiBusRoute]') AND type in (N'U'))
+BEGIN
+CREATE TABLE [dbo].[TaipeiBusRoute](
+	[Id] [int] NULL,
+	[ProviderId] [int] NULL,
+	[ProviderName] [nvarchar](50) NULL,
+	[Name] [nvarchar](50) NULL,
+	[NameEn] [nvarchar](100) NULL,
+	[PathAttributeId] [int] NULL,
+	[PathAttributeName] [nvarchar](50) NULL,
+	[PathAttributeNameEn] [nvarchar](100) NULL,
+	[BuildPeriod] [int] NULL,
+	[Departure] [nvarchar](50) NULL,
+	[DepartureEn] [nvarchar](100) NULL,
+	[Destination] [nvarchar](50) NULL,
+	[DestinationEn] [nvarchar](100) NULL,
+	[RealSequence] [int] NULL,
+	[Distance] [nvarchar](50) NULL,
+	[GoFirstBusTime] [nvarchar](50) NULL,
+	[BackFirstBusTime] [nvarchar](50) NULL,
+	[GoLastBusTime] [nvarchar](50) NULL,
+	[BackLastBusTime] [nvarchar](50) NULL,
+	[BusTimeDesc] [nvarchar](500) NULL,
+	[PeakHeadway] [nvarchar](50) NULL,
+	[OffPeakHeadway] [nvarchar](50) NULL,
+	[HeadwayDesc] [nvarchar](500) NULL,
+	[HolidayGoFirstBusTime] [nvarchar](50) NULL,
+	[HolidayBackFirstBusTime] [nvarchar](50) NULL,
+	[HolidayGoLastBusTime] [nvarchar](50) NULL,
+	[HolidayBackLastBusTime] [nvarchar](50) NULL,
+	[HolidayBusTimeDesc] [nvarchar](500) NULL,
+	[HolidayPeakHeadway] [nvarchar](50) NULL,
+	[HolidayOffPeakHeadway] [nvarchar](50) NULL,
+	[HolidayHeadwayDesc] [nvarchar](500) NULL,
+	[SegmentBuffer] [nvarchar](50) NULL,
+	[SegmentBufferEn] [nvarchar](100) NULL,
+	[TicketPriceDescription] [nvarchar](50) NULL,
+	[TicketPriceDescriptionEn] [nvarchar](100) NULL
+) ON [PRIMARY]
+END
+";
+            }
+
+            protected override DataTable ImportTable()
+            {
+                var dataTable = new DataTable();
+                dataTable.Columns.Add("Id", typeof(string));
+                dataTable.Columns.Add("Area", typeof(string));
+                dataTable.Columns.Add("Name", typeof(string));
+                dataTable.Columns.Add("Type", typeof(int));
+                dataTable.Columns.Add("Type2", typeof(int));
+                dataTable.Columns.Add("Summary", typeof(string));
+                dataTable.Columns.Add("Address", typeof(string));
+                dataTable.Columns.Add("Tel", typeof(string));
+                dataTable.Columns.Add("PayEx", typeof(string));
+                dataTable.Columns.Add("ServiceTime", typeof(string));
+                dataTable.Columns.Add("TotalCar", typeof(int));
+                dataTable.Columns.Add("TotalMotor", typeof(int));
+                dataTable.Columns.Add("TotalBike", typeof(int));
+                dataTable.Columns.Add("PregnancyFirst", typeof(int));
+                dataTable.Columns.Add("HandicapFirst", typeof(int));
+
+                dataTable.Columns.Add("Latitude", typeof(float));
+                dataTable.Columns.Add("Longitude", typeof(float));
+
+                return dataTable;
+            }
+
+            protected override DataTable Resolve(JObject jObj)
+            {
+                var list = JsonConvert.DeserializeObject<List<BusRouteEntity>>(jObj["BusInfo"].ToString());
+
+                var dataTable = ImportTable();
+                foreach (var item in list)
+                {
+                    var row = dataTable.NewRow();
+
+                    row["Id"] = item.Id;
+
+                    dataTable.Rows.Add(row);
+                }
+
+                return dataTable;
+            }
+
+            protected override string TableName()
+            {
+                return "TaipeiBusRoute";
+            }
+
+            public class BusRouteEntity
+            {
+                /// <summary>
+                /// 路線代碼
+                /// </summary>
+                public int Id { get; set; }
+                /// <summary>
+                /// 業者代碼
+                /// </summary>
+                public int ProviderId { get; set; }
+                /// <summary>
+                /// 業者中文名稱
+                /// </summary>
+                public string ProviderName { get; set; }
+                /// <summary>
+                /// 中文名稱
+                /// </summary>
+                [JsonProperty("NameZh")]
+                public string Name { get; set; }
+                /// <summary>
+                /// 英文名稱
+                /// </summary>
+                public string NameEn { get; set; }
+                /// <summary>
+                /// 所屬附屬路線
+                /// </summary>
+                public int PathAttributeId { get; set; }
+                /// <summary>
+                /// 所屬附屬路線中文名稱
+                /// </summary>
+                public string PathAttributeName { get; set; }
+                /// <summary>
+                /// 所屬附屬路線英文名稱
+                /// </summary>
+                [JsonProperty("pathAttributeEname")]
+                public string PathAttributeNameEn { get; set; }
+                /// <summary>
+                /// 建置時間，分為 1：1 期、2：2 期、3：3 期、9：非動態資料、10：北縣
+                /// </summary>
+                public int BuildPeriod { get; set; }
+                /// <summary>
+                /// '去程第 1 站' 起站中文名稱
+                /// </summary>
+                [JsonProperty("DepartureZh")]
+                public string Departure { get; set; }
+                /// <summary>
+                /// '去程第 1 站' 起站英文名稱
+                /// </summary>
+                public string DepartureEn { get; set; }
+                /// <summary>
+                /// 回程第 1 站' 訖站中文名稱
+                /// </summary>
+                [JsonProperty("DestinationZh")]
+                public string Destination { get; set; }
+                /// <summary>
+                /// '回程第 1 站' 訖站英文名稱
+                /// </summary>
+                public string DestinationEn { get; set; }
+                /// <summary>
+                /// 核定總班次
+                /// </summary>
+                public int RealSequence { get; set; }
+                /// <summary>
+                /// 總往返里程(公里/全程)
+                /// </summary>
+                public string Distance { get; set; }
+                /// <summary>
+                /// 站牌顯示時使用，去程第一班發車時間(hhmm)
+                /// </summary>
+                public string GoFirstBusTime { get; set; }
+                /// <summary>
+                /// 站牌顯示時使用，回程第一班發車時間(hhmm)
+                /// </summary>
+                public string BackFirstBusTime { get; set; }
+                /// <summary>
+                /// 站牌顯示時使用，去程最後一班發車時間(hhmm)
+                /// </summary>
+                public string GoLastBusTime { get; set; }
+                /// <summary>
+                /// 站牌顯示時使用，回程最後一班發車時間(hhmm)
+                /// </summary>
+                public string BackLastBusTime { get; set; }
+                /// <summary>
+                /// 平日頭末班描述
+                /// </summary>
+                public string BusTimeDesc { get; set; }
+                /// <summary>
+                /// 站牌顯示時使用，尖峰時段發車間隔(hhmm OR mm)
+                /// </summary>
+                public string PeakHeadway { get; set; }
+                /// <summary>
+                /// 站牌顯示時使用，離峰時段發車間隔(hhmm OR mm)
+                /// </summary>
+                public string OffPeakHeadway { get; set; }
+                /// <summary>
+                /// 平日發車間距描述 
+                /// </summary>
+                public string HeadwayDesc { get; set; }
+                /// <summary>
+                /// 假日站牌顯示時使用，去程第一班發車時間(HHmm)
+                /// </summary>
+                public string HolidayGoFirstBusTime { get; set; }
+                /// <summary>
+                /// 假日站牌顯示時使用，回程第一班發車時間(HHmm) 
+                /// </summary>
+                public string HolidayBackFirstBusTime { get; set; }
+                /// <summary>
+                /// 假日站牌顯示時使用，去程最後一班發車時間(HHmm)
+                /// </summary>
+                public string HolidayGoLastBusTime { get; set; }
+                /// <summary>
+                /// 假日站牌顯示時使用，回程最後一班發車時間(HHmm)
+                /// </summary>
+                public string HolidayBackLastBusTime { get; set; }
+                /// <summary>
+                /// 假日頭末班描述 
+                /// </summary>
+                public string HolidayBusTimeDesc { get; set; }
+                /// <summary>
+                /// 假日站牌顯示時使用，尖峰時段發車間隔(mmmm OR mm)
+                /// </summary>
+                public string HolidayPeakHeadway { get; set; }
+                /// <summary>
+                /// 假日站牌顯示時使用，離峰時段發車間隔(mmmm OR mm) 
+                /// </summary>
+                public string HolidayOffPeakHeadway { get; set; }
+                /// <summary>
+                /// 假日發車間距描述
+                /// </summary>
+                public string HolidayHeadwayDesc { get; set; }
+                /// <summary>
+                /// 分段緩衝區(中文)
+                /// </summary>
+                [JsonProperty("SegmentBufferZh")]
+                public string SegmentBuffer { get; set; }
+                /// <summary>
+                /// 分段緩衝區(英文)
+                /// </summary>
+                public string SegmentBufferEn { get; set; }
+                /// <summary>
+                /// 票價描述(中文)
+                /// </summary>
+                [JsonProperty("TicketPriceDescriptionZh")]
+                public string TicketPriceDescription { get; set; }
+                /// <summary>
+                /// 票價描述(英文)
+                /// </summary>
+                public string TicketPriceDescriptionEn { get; set; }
             }
         }
     }

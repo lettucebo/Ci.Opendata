@@ -193,9 +193,9 @@ END
 
             protected override DataTable Resolve(JObject jObj)
             {
-                var dataTable = ImportTable();
-
                 var list = JsonConvert.DeserializeObject<List<DescriptionEntity>>(jObj["data"]["park"].ToString());
+
+                var dataTable = ImportTable();
                 foreach (var item in list)
                 {
                     var ct = new Tool.CoordinateTransform();

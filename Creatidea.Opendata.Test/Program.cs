@@ -28,7 +28,7 @@ namespace Creatidea.Opendata.Test
             //Console.WriteLine(tp.GetLeftUbike("0001"));
 
 
-            var DXX = new Opendata.Taipei.Parking.Description();
+            var DXX = new Opendata.Taipei.Bus.Route();
             DXX.DataSave();
 
             //var s = Opendata.Taipei.Parking.Description.Get((float)25.034006, (float)121.543749);

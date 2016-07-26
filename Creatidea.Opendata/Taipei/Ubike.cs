@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Linq;
 
 namespace Creatidea.Opendata.Taipei
 {
@@ -325,6 +326,20 @@ END
                 }
 
                 return list;
+            }
+
+            public static StationEntity Get(int id)
+            {
+                StationEntity entity = null;
+
+                using (var openData = new Station())
+                {
+                    var table = openData.GetById(id);
+
+                    entity = table.ToList<StationEntity>().FirstOrDefault();
+                }
+
+                return entity;
             }
 
             private DataTable GetById(int id)

@@ -275,7 +275,7 @@ namespace Creatidea.Opendata
 
                 if (!string.IsNullOrEmpty(ConfigurationManager.AppSettings["OpenData.ConnectionStringName"]))
                 {
-                    connectionStringKeyWord = ConfigurationManager.AppSettings["Creatidea.OpenData.ConnectionStrings"];
+                    connectionStringKeyWord = ConfigurationManager.AppSettings["OpenData.ConnectionStringName"];
                 }
 
                 var connectionString = ConfigurationManager.ConnectionStrings[connectionStringKeyWord].ConnectionString;
@@ -383,7 +383,6 @@ namespace Creatidea.Opendata
                 }
 
                 sqlBulkCopy.WriteToServer(table);
-
             }
 
             transaction.Commit();
