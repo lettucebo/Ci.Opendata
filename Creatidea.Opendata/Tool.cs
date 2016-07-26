@@ -373,11 +373,19 @@ namespace Creatidea.Opendata
 
                         property.SetValue(item, val, null);
                     }
-                    else if (property.PropertyType == typeof(int))
+                    else if (property.PropertyType == typeof (int))
                     {
                         int val = new int();
 
                         int.TryParse(row[property.Name].ToString(), out val);
+
+                        property.SetValue(item, val, null);
+                    }
+                    else if (property.PropertyType == typeof(float))
+                    {
+                        float val = new float();
+
+                        float.TryParse(row[property.Name].ToString(), out val);
 
                         property.SetValue(item, val, null);
                     }

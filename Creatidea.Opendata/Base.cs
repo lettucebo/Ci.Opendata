@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data;
+using System.Data.SqlClient;
 using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -32,12 +34,9 @@ namespace Creatidea.Opendata
         Monthly,
     }
 
-    public interface ISchedule
-    {
-        void Start();
-        void Stop();
-    }
-
+    /// <summary>
+    /// 基礎類別
+    /// </summary>
     public abstract class BaseClass
     {
         /// <summary>
@@ -102,7 +101,6 @@ namespace Creatidea.Opendata
         public void Display(string message, params object[] str)
         {
             System.Diagnostics.Trace.WriteLine(message);
-            Console.WriteLine(message);
         }
 
         /// <summary>
@@ -124,6 +122,11 @@ namespace Creatidea.Opendata
 
     }
 
+    /// <summary>
+    /// 基礎OpenData類別
+    /// </summary>
+    /// <seealso cref="Creatidea.Opendata.BaseClass" />
+    /// <seealso cref="System.IDisposable" />
     public abstract class OpenData : BaseClass, IDisposable
     {
         /// <summary>
@@ -215,7 +218,7 @@ namespace Creatidea.Opendata
         /// <summary>
         /// 讀取資料並存入物件
         /// </summary>
-        public void DataSave()
+        public virtual void DataSave()
         {
             lock (LockObj)
             {
@@ -255,14 +258,156 @@ namespace Creatidea.Opendata
 
     }
 
-
+    /// <summary>
+    /// 儲存置資料庫用
+    /// </summary>
+    /// <seealso cref="Creatidea.Opendata.OpenData" />
     public abstract class OpenDataDataBase : OpenData
     {
         protected string ConnectionString = ConfigurationManager.ConnectionStrings["OpenData"].ConnectionString;
         protected int TimeOut = 3600;
+        
+        protected abstract string TableName();
+        protected abstract string CreateTableSqlString();
+
+        protected abstract DataTable ImportTable();
+
+
+        /// <summary>
+        /// 建立新TABLE
+        /// </summary>
+        protected void CreateDataTable()
+        {
+            var sqlConnection = new SqlConnection(ConnectionString);
+
+            sqlConnection.Open();
+
+            var sqlCommand = sqlConnection.CreateCommand();
+
+            sqlCommand.CommandTimeout = TimeOut;
+            sqlCommand.CommandType = CommandType.Text;
+            sqlCommand.CommandText = CreateTableSqlString();
+            sqlCommand.ExecuteNonQuery();
+
+            sqlConnection.Close();
+            sqlConnection.Dispose();
+        }
+
+        /// <summary>
+        /// 將TABLE清空並重新寫入資料
+        /// </summary>
+        protected void SaveToDatabase(DataTable table)
+        {
+            if (table == null || table.Columns.Count < 1)
+            {
+                Trace("沒有設定欄位無法儲存置資料庫");
+                return;
+            }
+
+            table.TableName = TableName();
+            var sqlConnection = new SqlConnection(ConnectionString);
+
+            sqlConnection.Open();
+
+            var transaction = sqlConnection.BeginTransaction();
+
+            var sqlCommand = sqlConnection.CreateCommand();
+            sqlCommand.Transaction = transaction;
+            sqlCommand.CommandType = CommandType.Text;
+            sqlCommand.CommandText = @" TRUNCATE TABLE " + TableName();
+            sqlCommand.CommandTimeout = TimeOut;
+
+            sqlCommand.ExecuteNonQuery();
+
+            // make sure to enable triggers
+            // more on triggers in next post
+            using (var sqlBulkCopy = new SqlBulkCopy(sqlConnection, SqlBulkCopyOptions.KeepIdentity
+                , transaction))
+            {
+                sqlBulkCopy.BulkCopyTimeout = int.MaxValue;
+                sqlBulkCopy.DestinationTableName = "dbo." + TableName();
+
+                foreach (DataColumn column in table.Columns)
+                {
+                    sqlBulkCopy.ColumnMappings.Add(column.ColumnName, column.ColumnName);
+                }
+
+                sqlBulkCopy.WriteToServer(table);
+
+            }
+
+            transaction.Commit();
+
+            sqlConnection.Close();
+            sqlConnection.Dispose();
+        }
+
+        /// <summary>
+        /// 儲存資料(資料庫)
+        /// </summary>
+        /// <param name="jObj">The j object.</param>
+        protected override void Save(JObject jObj)
+        {
+            var table = Resolve(jObj);
+
+            CreateDataTable();
+
+            SaveToDatabase(table);
+        }
+
+        /// <summary>
+        /// 解析資料
+        /// </summary>
+        /// <param name="jObj">The j object.</param>
+        /// <returns></returns>
+        protected abstract DataTable Resolve(JObject jObj);
+
+        public override void Dispose()
+        {
+        }
     }
 
-    public abstract class OpenDataSchedule : BaseClass, ISchedule, IDisposable
+    /// <summary>
+    /// 儲存至資料庫用(有地理座標)
+    /// </summary>
+    /// <seealso cref="Creatidea.Opendata.OpenDataDataBase" />
+    public abstract class OpenDataDataBaseLocation : OpenDataDataBase
+    {
+        public DataTable GetByLatLng(float lat, float lng, int locationRadius)
+        {
+            DataTable table = null;
+
+            var sqlConnection = new SqlConnection(ConnectionString);
+
+            sqlConnection.Open();
+
+            var sqlCommand = sqlConnection.CreateCommand();
+
+            sqlCommand.CommandTimeout = TimeOut;
+            sqlCommand.CommandType = CommandType.Text;
+            sqlCommand.CommandText = string.Format(" SELECT * FROM {0} WHERE SQRT((((CONVERT(float,@Lng)-CONVERT(float,Longitude))*PI()*12656*cos(((CONVERT(float,@Lat)+CONVERT(float,Latitude))/2)*PI()/180)/180)*((CONVERT(float,@Lng)-CONVERT(float,Longitude))*PI()*12656*cos (((CONVERT(float,@Lat)+CONVERT(float,Latitude))/2)*PI()/180)/180))+(((CONVERT(float,@Lat)-CONVERT(float,Latitude))*PI()*12656/180)*((CONVERT(float,@Lat)-CONVERT(float,Latitude))*PI()*12656/180)))< CONVERT(float,@KM) ", TableName());
+
+            sqlCommand.Parameters.Add("@Lat", SqlDbType.NVarChar).Value = lat;
+            sqlCommand.Parameters.Add("@Lng", SqlDbType.NVarChar).Value = lng;
+            sqlCommand.Parameters.Add("@KM", SqlDbType.Int).Value = locationRadius;
+
+            table = new DataTable();
+            var adapter = new SqlDataAdapter(sqlCommand);
+            adapter.Fill(table);
+
+            sqlCommand.ExecuteNonQuery();
+
+            sqlConnection.Close();
+            sqlConnection.Dispose();
+
+            return table;
+        }
+    }
+
+    /// <summary>
+    /// 排程用Opendata類別
+    /// </summary>
+    public abstract class OpenDataSchedule : BaseClass, IDisposable
     {
         /// <summary>
         /// 執行目錄路徑

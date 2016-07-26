@@ -11,7 +11,7 @@ using System.Linq;
 namespace Creatidea.Opendata.Taipei
 {
     /// <summary>
-    /// 停車場資訊
+    /// 停車場
     /// </summary>
     public class Parking
     {
@@ -113,11 +113,51 @@ namespace Creatidea.Opendata.Taipei
 
         }
 
-        public class Description : OpenDataDataBase
+        /// <summary>
+        /// 停車場資訊
+        /// </summary>
+        /// <seealso cref="Creatidea.Opendata.OpenDataDataBase" />
+        public class Description : OpenDataDataBaseLocation
         {
-            private static object _staticLockObj = new object();
+            protected override string TableName()
+            {
+                return "TaipeiParkingArea";
+            }
 
-            private static DataTable NewTable()
+            protected override string CreateTableSqlString()
+            {
+                return @"
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[TaipeiParkingArea]') AND type in (N'U'))
+BEGIN
+CREATE TABLE [dbo].[TaipeiParkingArea](
+	[Id] [nvarchar](50) NOT NULL,
+	[Name] [nvarchar](50) NULL,
+	[Area] [nvarchar](50) NULL,
+	[Type] [int] NULL,
+	[Type2] [int] NULL,
+	[Summary] [nvarchar](max) NULL,
+	[Address] [nvarchar](max) NULL,
+	[Tel] [nvarchar](50) NULL,
+	[PayEx] [nvarchar](max) NULL,
+	[ServiceTime] [nvarchar](max) NULL,
+	[TotalCar] [int] NULL,
+	[TotalMotor] [int] NULL,
+	[TotalBike] [int] NULL,
+	[PregnancyFirst] [int] NULL,
+	[HandicapFirst] [int] NULL,
+	[Latitude] [float] NULL,
+	[Longitude] [float] NULL,
+ CONSTRAINT [PK_TaipeiParkingArea] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+END
+
+";
+            }
+
+            protected override DataTable ImportTable()
             {
                 var dataTable = new DataTable();
                 dataTable.Columns.Add("Id", typeof(string));
@@ -151,12 +191,12 @@ namespace Creatidea.Opendata.Taipei
                 return jObject;
             }
 
-            protected override void Save(JObject jObj)
+            protected override DataTable Resolve(JObject jObj)
             {
-                var dataTable = NewTable();
+                var dataTable = ImportTable();
 
-                var jObject = JsonConvert.DeserializeObject<List<DescriptionEntity>>(jObj["data"]["park"].ToString());
-                foreach (var item in jObject)
+                var list = JsonConvert.DeserializeObject<List<DescriptionEntity>>(jObj["data"]["park"].ToString());
+                foreach (var item in list)
                 {
                     var ct = new Tool.CoordinateTransform();
                     var lonlat = ct.TWD97_To_lonlat(item.Longitude, item.Latitude, 2);
@@ -227,18 +267,9 @@ namespace Creatidea.Opendata.Taipei
 
                 }
 
-                lock (_staticLockObj)
-                {
-                    CreateDataTable();
-                    SaveToDatabase(dataTable);
-                }
+                return dataTable;
             }
-
-            public override void Dispose()
-            {
-                throw new NotImplementedException();
-            }
-
+            
             /// <summary>
             /// 取得停車場
             /// </summary>
@@ -247,14 +278,13 @@ namespace Creatidea.Opendata.Taipei
             public static DescriptionEntity Get(string id)
             {
                 DescriptionEntity entity = null;
+                
+                using (var openData = new Description())
+                {
+                    var table = openData.GetById(id);
 
-                var description = new Description();
-
-                var table = description.GetById(id);
-
-                entity = table.ToList<DescriptionEntity>().FirstOrDefault();
-
-                description.Dispose();
+                    entity = table.ToList<DescriptionEntity>().FirstOrDefault();
+                }
 
                 return entity;
             }
@@ -264,18 +294,19 @@ namespace Creatidea.Opendata.Taipei
             /// </summary>
             /// <param name="lat">緯度</param>
             /// <param name="lng">經度</param>
+            /// <param name="locationRadius">半徑範圍</param>
             /// <returns></returns>
-            public static IList<DescriptionEntity> Get(float lat, float lng)
+            public static IList<DescriptionEntity> Get(float lat, float lng, int locationRadius = 1)
             {
                 IList<DescriptionEntity> list = null;
-
-                var description = new Description();
-                var table = description.GetByLatLng(lat, lng);
                 
-                list = table.ToList<DescriptionEntity>();
+                using (var openData = new Description())
+                {
+                    var table = openData.GetByLatLng(lat, lng, locationRadius);
 
-                description.Dispose();
-                
+                    list = table.ToList<DescriptionEntity>();
+                }
+
                 return list;
             }
 
@@ -436,103 +467,8 @@ namespace Creatidea.Opendata.Taipei
 
             }
 
-            public void CreateDataTable()
-            {
-                var sqlConnection = new SqlConnection(ConnectionString);
-
-                sqlConnection.Open();
-                
-                var sqlCommand = sqlConnection.CreateCommand();
-
-                sqlCommand.CommandTimeout = TimeOut;
-                sqlCommand.CommandType = CommandType.Text;
-                sqlCommand.CommandText = @"
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[TaipeiParkingArea]') AND type in (N'U'))
-BEGIN
-CREATE TABLE [dbo].[TaipeiParkingArea](
-	[Id] [nvarchar](50) NOT NULL,
-	[Name] [nvarchar](50) NULL,
-	[Area] [nvarchar](50) NULL,
-	[Type] [int] NULL,
-	[Type2] [int] NULL,
-	[Summary] [nvarchar](max) NULL,
-	[Address] [nvarchar](max) NULL,
-	[Tel] [nvarchar](50) NULL,
-	[PayEx] [nvarchar](max) NULL,
-	[ServiceTime] [nvarchar](max) NULL,
-	[TotalCar] [int] NULL,
-	[TotalMotor] [int] NULL,
-	[TotalBike] [int] NULL,
-	[PregnancyFirst] [int] NULL,
-	[HandicapFirst] [int] NULL,
-	[Latitude] [float] NULL,
-	[Longitude] [float] NULL
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
-
-";
-                sqlCommand.ExecuteNonQuery();
-
-                sqlConnection.Close();
-                sqlConnection.Dispose();
-
-
-            }
-
-            public void SaveToDatabase(DataTable table)
-            {
-                table.TableName = "TaipeiParkingArea";
-                var sqlConnection = new SqlConnection(ConnectionString);
-
-                sqlConnection.Open();
-
-                var transaction = sqlConnection.BeginTransaction();
-
-                var sqlCommand = sqlConnection.CreateCommand();
-                sqlCommand.Transaction = transaction;
-                sqlCommand.CommandType = CommandType.Text;
-                sqlCommand.CommandText = @" TRUNCATE TABLE TaipeiParkingArea ";
-                sqlCommand.CommandTimeout = TimeOut;
-
-                sqlCommand.ExecuteNonQuery();
-
-                // make sure to enable triggers
-                // more on triggers in next post
-                using (var sqlBulkCopy = new SqlBulkCopy(sqlConnection, SqlBulkCopyOptions.KeepIdentity
-                    , transaction))
-                {
-                    sqlBulkCopy.BulkCopyTimeout = int.MaxValue;
-                    sqlBulkCopy.DestinationTableName = "dbo.TaipeiParkingArea";
-
-                    sqlBulkCopy.ColumnMappings.Add("Id", "Id");
-                    sqlBulkCopy.ColumnMappings.Add("Area", "Area");
-                    sqlBulkCopy.ColumnMappings.Add("Name", "Name");
-                    sqlBulkCopy.ColumnMappings.Add("Type", "Type");
-                    sqlBulkCopy.ColumnMappings.Add("Type2", "Type2");
-                    sqlBulkCopy.ColumnMappings.Add("Summary", "Summary");
-                    sqlBulkCopy.ColumnMappings.Add("Address", "Address");
-                    sqlBulkCopy.ColumnMappings.Add("Tel", "Tel");
-                    sqlBulkCopy.ColumnMappings.Add("PayEx", "PayEx");
-                    sqlBulkCopy.ColumnMappings.Add("ServiceTime", "ServiceTime");
-                    sqlBulkCopy.ColumnMappings.Add("TotalCar", "TotalCar");
-                    sqlBulkCopy.ColumnMappings.Add("TotalMotor", "TotalMotor");
-                    sqlBulkCopy.ColumnMappings.Add("TotalBike", "TotalBike");
-                    sqlBulkCopy.ColumnMappings.Add("PregnancyFirst", "PregnancyFirst");
-                    sqlBulkCopy.ColumnMappings.Add("HandicapFirst", "HandicapFirst");
-                    sqlBulkCopy.ColumnMappings.Add("Latitude", "Latitude");
-                    sqlBulkCopy.ColumnMappings.Add("Longitude", "Longitude");
-
-                    sqlBulkCopy.WriteToServer(table);
-
-                }
-
-                transaction.Commit();
-
-                sqlConnection.Close();
-                sqlConnection.Dispose();
-            }
-
-            public DataTable GetById(string id)
+            
+            private DataTable GetById(string id)
             {
                 DataTable table = null;
 
@@ -546,36 +482,6 @@ END
                 sqlCommand.CommandType = CommandType.Text;
                 sqlCommand.CommandText = @" SELECT * FROM TaipeiParkingArea WHERE Id = @Id ";
                 sqlCommand.Parameters.Add("@Id", SqlDbType.NVarChar).Value = id;
-
-                table = new DataTable();
-                var adapter = new SqlDataAdapter(sqlCommand);
-                adapter.Fill(table);
-
-                sqlCommand.ExecuteNonQuery();
-
-                sqlConnection.Close();
-                sqlConnection.Dispose();
-
-
-                return table;
-            }
-
-            public DataTable GetByLatLng(float lat, float lng)
-            {
-                DataTable table = null;
-
-                var sqlConnection = new SqlConnection(ConnectionString);
-
-                sqlConnection.Open();
-
-                var sqlCommand = sqlConnection.CreateCommand();
-
-                sqlCommand.CommandTimeout = TimeOut;
-                sqlCommand.CommandType = CommandType.Text;
-                sqlCommand.CommandText = @" SELECT * FROM TaipeiParkingArea WHERE SQRT((((CONVERT(float,@Lng)-CONVERT(float,Longitude))*PI()*12656*cos(((CONVERT(float,@Lat)+CONVERT(float,Latitude))/2)*PI()/180)/180)*((CONVERT(float,@Lng)-CONVERT(float,Longitude))*PI()*12656*cos (((CONVERT(float,@Lat)+CONVERT(float,Latitude))/2)*PI()/180)/180))+(((CONVERT(float,@Lat)-CONVERT(float,Latitude))*PI()*12656/180)*((CONVERT(float,@Lat)-CONVERT(float,Latitude))*PI()*12656/180)))< CONVERT(float,@KM) ";
-
-                sqlCommand.Parameters.Add("@Lat", SqlDbType.NVarChar).Value = lat;
-                sqlCommand.Parameters.Add("@Lng", SqlDbType.NVarChar).Value = lng;
 
                 table = new DataTable();
                 var adapter = new SqlDataAdapter(sqlCommand);

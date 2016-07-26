@@ -26,14 +26,17 @@ namespace Creatidea.Opendata.Test
             //var s = Weather.Cwb.Get;
 
             //Console.WriteLine(tp.GetLeftUbike("0001"));
-            
 
-            Opendata.Taipei.Parking.Description DXX = new Parking.Description();
+
+            var DXX = new Opendata.Taipei.Ubike.Station();
             DXX.DataSave();
+
+            //var s = Opendata.Taipei.Parking.Description.Get((float)25.034006, (float)121.543749);
+
 
             Console.WriteLine("Test End");
             Console.ReadLine();
         }
-        
+
     }
 }
