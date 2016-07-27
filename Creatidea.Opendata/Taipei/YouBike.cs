@@ -11,10 +11,10 @@ using System.Linq;
 namespace Creatidea.Opendata.Taipei
 {
     /// <summary>
-    /// 微笑單車(Ubike)
+    /// 微笑單車(YouBike)
     /// </summary>
     /// <seealso cref="Creatidea.Opendata.OpenData" />
-    public class Ubike
+    public class YouBike
     {
         /// <summary>
         /// 數量即時資訊
@@ -113,15 +113,15 @@ namespace Creatidea.Opendata.Taipei
         {
             protected override string TableName()
             {
-                return "TaipeiUbike";
+                return "TaipeiYouBike";
             }
 
             protected override string CreateTableSqlString()
             {
                 return @"
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[TaipeiUbike]') AND type in (N'U'))
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[TaipeiYouBike]') AND type in (N'U'))
 BEGIN
-CREATE TABLE [dbo].[TaipeiUbike](
+CREATE TABLE [dbo].[TaipeiYouBike](
 	[No] [int] NOT NULL,
 	[Name] [nvarchar](50) NULL,
 	[Area] [nvarchar](50) NULL,
@@ -136,7 +136,7 @@ CREATE TABLE [dbo].[TaipeiUbike](
 	[Latitude] [float] NULL,
 	[Longitude] [float] NULL,
 	[Action] [int] NULL,
- CONSTRAINT [PK_UBike] PRIMARY KEY CLUSTERED 
+ CONSTRAINT [PK_TaipeiYouBike] PRIMARY KEY CLUSTERED 
 (
 	[No] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
