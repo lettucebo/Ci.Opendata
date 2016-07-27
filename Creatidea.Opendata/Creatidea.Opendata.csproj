@@ -49,8 +49,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Base.cs" />
+    <Compile Include="Taipei\ArtsMuseum.cs" />
     <Compile Include="Taipei\Bus.cs" />
     <Compile Include="Taipei\Parking.cs" />
+    <Compile Include="Taipei\TravelAttractions.cs" />
     <Compile Include="Taipei\YouBike.cs" />
     <Compile Include="Tool.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

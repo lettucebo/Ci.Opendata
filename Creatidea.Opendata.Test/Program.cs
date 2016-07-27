@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Creatidea.Opendata.Taipei;
+using Creatidea.Opendata;
 
 namespace Creatidea.Opendata.Test
 {
@@ -26,10 +26,20 @@ namespace Creatidea.Opendata.Test
             //var s = Weather.Cwb.Get;
 
             //Console.WriteLine(tp.GetLeftUbike("0001"));
+            var list = new List<OpenData>
+            {
+                //new Taipei.Bus.Route(),
+                //new Taipei.Bus.Stop(),
+                //new Taipei.ArtsMuseum(),
+                //new Taipei.Parking.Description(),
+                //new Taipei.YouBike.Station(),
+                new Taipei.TravelAttractions.Chinese(),
+            };
 
-
-            var DXX = new Opendata.Taipei.YouBike.Station();
-            DXX.DataSave();
+            foreach (var opendata in list)
+            {
+                opendata.DataSave();
+            }
 
             //var s = Opendata.Taipei.Parking.Description.Get((float)25.034006, (float)121.543749);
 

@@ -156,32 +156,7 @@ END
 
 ";
             }
-
-            protected override DataTable ImportTable()
-            {
-                var dataTable = new DataTable();
-                dataTable.Columns.Add("Id", typeof(string));
-                dataTable.Columns.Add("Area", typeof(string));
-                dataTable.Columns.Add("Name", typeof(string));
-                dataTable.Columns.Add("Type", typeof(int));
-                dataTable.Columns.Add("Type2", typeof(int));
-                dataTable.Columns.Add("Summary", typeof(string));
-                dataTable.Columns.Add("Address", typeof(string));
-                dataTable.Columns.Add("Tel", typeof(string));
-                dataTable.Columns.Add("PayEx", typeof(string));
-                dataTable.Columns.Add("ServiceTime", typeof(string));
-                dataTable.Columns.Add("TotalCar", typeof(int));
-                dataTable.Columns.Add("TotalMotor", typeof(int));
-                dataTable.Columns.Add("TotalBike", typeof(int));
-                dataTable.Columns.Add("PregnancyFirst", typeof(int));
-                dataTable.Columns.Add("HandicapFirst", typeof(int));
-
-                dataTable.Columns.Add("Latitude", typeof(float));
-                dataTable.Columns.Add("Longitude", typeof(float));
-
-                return dataTable;
-            }
-
+            
             public override JObject Data()
             {
                 var jsonString = Tool.GetGzContent("http://data.taipei/tcmsv/alldesc", Encoding.Default);
@@ -195,7 +170,6 @@ END
             {
                 var list = JsonConvert.DeserializeObject<List<DescriptionEntity>>(jObj["data"]["park"].ToString());
 
-                var dataTable = ImportTable();
                 foreach (var item in list)
                 {
                     var ct = new Tool.CoordinateTransform();
@@ -203,73 +177,13 @@ END
 
                     var lnglatArray = lonlat.Split(new[] { "," }, StringSplitOptions.None);
 
-                    var row = dataTable.NewRow();
-
-                    row["Id"] = item.Id;
-                    row["Area"] = item.Area;
-                    row["Name"] = item.Name;
-                    row["Type"] = item.Type;
-                    row["Type2"] = item.Type2;
-                    row["Summary"] = item.Summary;
-                    row["Address"] = item.Address;
-                    row["Tel"] = item.Tel;
-                    row["PayEx"] = item.PayEx;
-                    row["ServiceTime"] = item.ServiceTime;
-                    if (item.TotalCar.HasValue)
-                    {
-                        row["TotalCar"] = item.TotalCar.Value;
-                    }
-                    else
-                    {
-                        row["TotalCar"] = DBNull.Value;
-                    }
-
-                    if (item.TotalMotor.HasValue)
-                    {
-                        row["TotalMotor"] = item.TotalMotor.Value;
-                    }
-                    else
-                    {
-                        row["TotalMotor"] = DBNull.Value;
-                    }
-
-                    if (item.TotalBike.HasValue)
-                    {
-                        row["TotalBike"] = item.TotalBike.Value;
-                    }
-                    else
-                    {
-                        row["TotalBike"] = DBNull.Value;
-                    }
-
-                    if (item.PregnancyFirst.HasValue)
-                    {
-                        row["PregnancyFirst"] = item.PregnancyFirst.Value;
-                    }
-                    else
-                    {
-                        row["PregnancyFirst"] = DBNull.Value;
-                    }
-
-                    if (item.HandicapFirst.HasValue)
-                    {
-                        row["HandicapFirst"] = item.HandicapFirst.Value;
-                    }
-                    else
-                    {
-                        row["HandicapFirst"] = DBNull.Value;
-                    }
-
-                    row["Latitude"] = Convert.ToDouble(lnglatArray[1]);
-                    row["Longitude"] = Convert.ToDouble(lnglatArray[0]);
-
-                    dataTable.Rows.Add(row);
-
+                    item.Latitude = Convert.ToSingle(lnglatArray[1]);
+                    item.Longitude = Convert.ToSingle(lnglatArray[0]);
                 }
 
-                return dataTable;
+                return list.ListToDataTable();
             }
-            
+
             /// <summary>
             /// 取得停車場
             /// </summary>
@@ -278,7 +192,7 @@ END
             public static DescriptionEntity Get(string id)
             {
                 DescriptionEntity entity = null;
-                
+
                 using (var openData = new Description())
                 {
                     var table = openData.GetById(id);
@@ -299,7 +213,7 @@ END
             public static IList<DescriptionEntity> Get(float lat, float lng, int locationRadius = 1)
             {
                 IList<DescriptionEntity> list = null;
-                
+
                 using (var openData = new Description())
                 {
                     var table = openData.GetByLatLng(lat, lng, locationRadius);
@@ -467,7 +381,7 @@ END
 
             }
 
-            
+
             private DataTable GetById(string id)
             {
                 DataTable table = null;

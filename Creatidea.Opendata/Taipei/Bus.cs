@@ -149,67 +149,12 @@ END
 
 ";
             }
-
-            protected override DataTable ImportTable()
-            {
-                var dataTable = new DataTable();
-                dataTable.Columns.Add("Id", typeof(int));
-                dataTable.Columns.Add("RouteId", typeof(int));
-                dataTable.Columns.Add("Name", typeof(string));
-                dataTable.Columns.Add("NameEn", typeof(string));
-                dataTable.Columns.Add("SeqNo", typeof(int));
-                dataTable.Columns.Add("Pgp", typeof(int));
-                dataTable.Columns.Add("GoBack", typeof(int));
-                dataTable.Columns.Add("StopLocationId", typeof(int));
-                dataTable.Columns.Add("Vector", typeof(int));
-
-                dataTable.Columns.Add("Latitude", typeof(float));
-                dataTable.Columns.Add("Longitude", typeof(float));
-
-                return dataTable;
-            }
-
+            
             protected override DataTable Resolve(JObject jObj)
             {
                 var list = JsonConvert.DeserializeObject<List<BusStopEntity>>(jObj["BusInfo"].ToString());
-
-                var dataTable = ImportTable();
-                foreach (var item in list)
-                {
-                    var row = dataTable.NewRow();
-
-                    row["Id"] = item.Id;
-                    row["RouteId"] = item.RouteId;
-                    row["Name"] = item.Name;
-                    row["NameEn"] = item.NameEn;
-                    row["SeqNo"] = item.SeqNo;
-                    if (item.Pgp.HasValue)
-                    {
-                        row["Pgp"] = item.Pgp.Value;
-                    }
-                    else
-                    {
-                        row["Pgp"] = DBNull.Value;
-                    }
-                    row["GoBack"] = item.GoBack;
-                    row["StopLocationId"] = item.StopLocationId;
-
-                    if (item.Vector.HasValue)
-                    {
-                        row["Vector"] = item.Vector.Value;
-                    }
-                    else
-                    {
-                        row["Vector"] = DBNull.Value;
-                    }
-
-                    row["Latitude"] = item.Latitude;
-                    row["Longitude"] = item.Longitude;
-
-                    dataTable.Rows.Add(row);
-                }
-
-                return dataTable;
+                
+                return list.ListToDataTable();
             }
 
             public class BusStopEntity
@@ -323,98 +268,12 @@ CREATE TABLE [dbo].[TaipeiBusRoute](
 END
 ";
             }
-
-            protected override DataTable ImportTable()
-            {
-                var dataTable = new DataTable();
-                dataTable.Columns.Add("Id", typeof(int));
-                dataTable.Columns.Add("ProviderId", typeof(int));
-                dataTable.Columns.Add("ProviderName", typeof(string));
-                dataTable.Columns.Add("Name", typeof(string));
-                dataTable.Columns.Add("NameEn", typeof(string));
-                dataTable.Columns.Add("PathAttributeId", typeof(int));
-                dataTable.Columns.Add("PathAttributeName", typeof(string));
-                dataTable.Columns.Add("PathAttributeNameEn", typeof(string));
-                dataTable.Columns.Add("BuildPeriod", typeof(int));
-                dataTable.Columns.Add("Departure", typeof(string));
-                dataTable.Columns.Add("DepartureEn", typeof(string));
-                dataTable.Columns.Add("Destination", typeof(string));
-                dataTable.Columns.Add("DestinationEn", typeof(string));
-                dataTable.Columns.Add("RealSequence", typeof(int));
-                dataTable.Columns.Add("Distance", typeof(float));
-                dataTable.Columns.Add("GoFirstBusTime", typeof(string));
-                dataTable.Columns.Add("BackFirstBusTime", typeof(string));
-                dataTable.Columns.Add("GoLastBusTime", typeof(string));
-                dataTable.Columns.Add("BackLastBusTime", typeof(string));
-                dataTable.Columns.Add("BusTimeDesc", typeof(string));
-                dataTable.Columns.Add("PeakHeadway", typeof(string));
-                dataTable.Columns.Add("OffPeakHeadway", typeof(string));
-                dataTable.Columns.Add("HeadwayDesc", typeof(string));
-                dataTable.Columns.Add("HolidayGoFirstBusTime", typeof(string));
-                dataTable.Columns.Add("HolidayBackFirstBusTime", typeof(string));
-                dataTable.Columns.Add("HolidayGoLastBusTime", typeof(string));
-                dataTable.Columns.Add("HolidayBackLastBusTime", typeof(string));
-                dataTable.Columns.Add("HolidayBusTimeDesc", typeof(string));
-                dataTable.Columns.Add("HolidayPeakHeadway", typeof(string));
-                dataTable.Columns.Add("HolidayOffPeakHeadway", typeof(string));
-                dataTable.Columns.Add("HolidayHeadwayDesc", typeof(string));
-                dataTable.Columns.Add("SegmentBuffer", typeof(string));
-                dataTable.Columns.Add("SegmentBufferEn", typeof(string));
-                dataTable.Columns.Add("TicketPriceDescription", typeof(string));
-                dataTable.Columns.Add("TicketPriceDescriptionEn", typeof(string));
-
-                return dataTable;
-            }
-
+            
             protected override DataTable Resolve(JObject jObj)
             {
                 var list = JsonConvert.DeserializeObject<List<BusRouteEntity>>(jObj["BusInfo"].ToString());
-
-                var dataTable = ImportTable();
-                foreach (var item in list)
-                {
-                    var row = dataTable.NewRow();
-
-                    row["Id"] = item.Id;
-                    row["ProviderId"] = item.ProviderId;
-                    row["ProviderName"] = item.ProviderName;
-                    row["Name"] = item.Name;
-                    row["NameEn"] = item.NameEn;
-                    row["PathAttributeId"] = item.PathAttributeId;
-                    row["PathAttributeName"] = item.PathAttributeName;
-                    row["PathAttributeNameEn"] = item.PathAttributeNameEn;
-                    row["BuildPeriod"] = item.BuildPeriod;
-                    row["Departure"] = item.Departure;
-                    row["DepartureEn"] = item.DepartureEn;
-                    row["Destination"] = item.Destination;
-                    row["DestinationEn"] = item.DestinationEn;
-                    row["RealSequence"] = item.RealSequence;
-                    row["Distance"] = item.Distance;
-                    row["GoFirstBusTime"] = item.GoFirstBusTime;
-                    row["BackFirstBusTime"] = item.BackFirstBusTime;
-                    row["GoLastBusTime"] = item.GoLastBusTime;
-                    row["BackLastBusTime"] = item.BackLastBusTime;
-                    row["BusTimeDesc"] = item.BusTimeDesc;
-                    row["PeakHeadway"] = item.PeakHeadway;
-                    row["OffPeakHeadway"] = item.OffPeakHeadway;
-                    row["HeadwayDesc"] = item.HeadwayDesc;
-                    row["HolidayGoFirstBusTime"] = item.HolidayGoFirstBusTime;
-                    row["HolidayBackFirstBusTime"] = item.HolidayBackFirstBusTime;
-                    row["HolidayGoLastBusTime"] = item.HolidayGoLastBusTime;
-                    row["HolidayBackLastBusTime"] = item.HolidayBackLastBusTime;
-                    row["HolidayBusTimeDesc"] = item.HolidayBusTimeDesc;
-                    row["HolidayPeakHeadway"] = item.HolidayPeakHeadway;
-                    row["HolidayOffPeakHeadway"] = item.HolidayOffPeakHeadway;
-                    row["HolidayHeadwayDesc"] = item.HolidayHeadwayDesc;
-                    row["SegmentBuffer"] = item.SegmentBuffer;
-                    row["SegmentBufferEn"] = item.SegmentBufferEn;
-                    row["TicketPriceDescription"] = item.TicketPriceDescription;
-                    row["TicketPriceDescriptionEn"] = item.TicketPriceDescriptionEn;
-
-                    dataTable.Rows.Add(row);
-                }
-
-                return dataTable;
+                
+                return list.ListToDataTable();
             }
 
             protected override string TableName()

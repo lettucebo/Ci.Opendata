@@ -13,7 +13,6 @@ namespace Creatidea.Opendata.Taipei
     /// <summary>
     /// 微笑單車(YouBike)
     /// </summary>
-    /// <seealso cref="Creatidea.Opendata.OpenData" />
     public class YouBike
     {
         /// <summary>
@@ -145,28 +144,6 @@ END
 
 ";
             }
-
-            protected override DataTable ImportTable()
-            {
-                var dataTable = new DataTable();
-                dataTable.Columns.Add("No", typeof(int));
-                dataTable.Columns.Add("Name", typeof(string));
-                dataTable.Columns.Add("TotalSpace", typeof(int));
-                dataTable.Columns.Add("CurrentSpace", typeof(int));
-                dataTable.Columns.Add("CurrentBike", typeof(int));
-                dataTable.Columns.Add("Area", typeof(string));
-                dataTable.Columns.Add("ModifyTime", typeof(string));
-                dataTable.Columns.Add("Latitude", typeof(float));
-                dataTable.Columns.Add("Longitude", typeof(float));
-                dataTable.Columns.Add("Address", typeof(string));
-                dataTable.Columns.Add("AreaEn", typeof(string));
-                dataTable.Columns.Add("NameEn", typeof(string));
-                dataTable.Columns.Add("AddressEn", typeof(string));
-                dataTable.Columns.Add("Action", typeof(int));
-
-                return dataTable;
-            }
-
             public override JObject Data()
             {
                 var jsonString = Tool.GetWebContent("http://data.taipei/youbike", Encoding.UTF8);
@@ -178,35 +155,18 @@ END
 
             protected override DataTable Resolve(JObject jObject)
             {
-                var dataTable = ImportTable();
+                var list = new List<StationEntity>();
                 foreach (var items in jObject["retVal"])
                 {
                     foreach (var item in items)
                     {
                         var entity = JsonConvert.DeserializeObject<StationEntity>(item.ToString());
 
-                        var row = dataTable.NewRow();
-
-                        row["No"] = entity.No;
-                        row["Name"] = entity.Name;
-                        row["TotalSpace"] = entity.TotalSpace;
-                        row["CurrentSpace"] = entity.CurrentSpace;
-                        row["CurrentBike"] = entity.CurrentBike;
-                        row["Area"] = entity.Area;
-                        row["ModifyTime"] = entity.ModifyTime;
-                        row["Latitude"] = entity.Latitude;
-                        row["Longitude"] = entity.Longitude;
-                        row["Address"] = entity.Address;
-                        row["AreaEn"] = entity.AreaEn;
-                        row["NameEn"] = entity.NameEn;
-                        row["AddressEn"] = entity.AddressEn;
-                        row["Action"] = entity.Action;
-
-                        dataTable.Rows.Add(row);
+                        list.Add(entity);
                     }
                 }
 
-                return dataTable;
+                return list.ListToDataTable();
             }
             
             public class StationEntity
@@ -235,7 +195,7 @@ END
                 /// 站點代號
                 /// </summary>
                 [JsonProperty("sno")]
-                public string No { get; set; }
+                public int No { get; set; }
                 /// <summary>
                 /// 場站名稱(中文)
                 /// </summary>
@@ -250,12 +210,12 @@ END
                 /// 場站總停車格
                 /// </summary>
                 [JsonProperty("tot")]
-                public string TotalSpace { get; set; }
+                public int TotalSpace { get; set; }
                 /// <summary>
                 /// 場站目前車輛數量
                 /// </summary>
                 [JsonProperty("sbi")]
-                public string CurrentBike { get; set; }
+                public int CurrentBike { get; set; }
                 /// <summary>
                 /// 場站區域(中文)
                 /// </summary>
@@ -270,12 +230,12 @@ END
                 /// 緯度
                 /// </summary>
                 [JsonProperty("lat")]
-                public string Latitude { get; set; }
+                public float Latitude { get; set; }
                 /// <summary>
                 /// 經度
                 /// </summary>
                 [JsonProperty("lng")]
-                public string Longitude { get; set; }
+                public float Longitude { get; set; }
                 /// <summary>
                 /// 地址(中文)
                 /// </summary>
@@ -299,13 +259,13 @@ END
                 /// <summary>
                 /// 
                 /// </summary>
-                [JsonProperty("nbcnt")]
-                public string nbcnt { get; set; }
+                //[JsonProperty("nbcnt")]
+                //public string nbcnt { get; set; }
                 /// <summary>
                 /// 空位數量
                 /// </summary>
                 [JsonProperty("bemp")]
-                public string CurrentSpace { get; set; }
+                public int CurrentSpace { get; set; }
                 /// <summary>
                 /// 全站禁用狀態
                 /// </summary>

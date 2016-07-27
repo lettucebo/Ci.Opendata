@@ -258,6 +258,51 @@ namespace Creatidea.Opendata
 
     }
 
+
+    /// <summary>
+    /// 儲存至資料庫用(有地理座標)
+    /// </summary>
+    /// <seealso cref="Creatidea.Opendata.OpenDataDataBase" />
+    public abstract class OpenDataLocation : OpenDataDataBase
+    {
+        /// <summary>
+        /// 取得資料(使用地理座標)
+        /// </summary>
+        /// <param name="lat">緯度</param>
+        /// <param name="lng">經度</param>
+        /// <param name="locationRadius">範圍(KM)</param>
+        /// <returns></returns>
+        public DataTable GetByLatLng(float lat, float lng, int locationRadius)
+        {
+            DataTable table = null;
+
+            var sqlConnection = new SqlConnection(ConnectionString);
+
+            sqlConnection.Open();
+
+            var sqlCommand = sqlConnection.CreateCommand();
+
+            sqlCommand.CommandTimeout = TimeOut;
+            sqlCommand.CommandType = CommandType.Text;
+            sqlCommand.CommandText = string.Format(" SELECT * FROM {0} WHERE SQRT((((CONVERT(float,@Lng)-CONVERT(float,Longitude))*PI()*12656*cos(((CONVERT(float,@Lat)+CONVERT(float,Latitude))/2)*PI()/180)/180)*((CONVERT(float,@Lng)-CONVERT(float,Longitude))*PI()*12656*cos (((CONVERT(float,@Lat)+CONVERT(float,Latitude))/2)*PI()/180)/180))+(((CONVERT(float,@Lat)-CONVERT(float,Latitude))*PI()*12656/180)*((CONVERT(float,@Lat)-CONVERT(float,Latitude))*PI()*12656/180)))< CONVERT(float,@KM) ", TableName());
+
+            sqlCommand.Parameters.Add("@Lat", SqlDbType.NVarChar).Value = lat;
+            sqlCommand.Parameters.Add("@Lng", SqlDbType.NVarChar).Value = lng;
+            sqlCommand.Parameters.Add("@KM", SqlDbType.Int).Value = locationRadius;
+
+            table = new DataTable();
+            var adapter = new SqlDataAdapter(sqlCommand);
+            adapter.Fill(table);
+
+            sqlCommand.ExecuteNonQuery();
+
+            sqlConnection.Close();
+            sqlConnection.Dispose();
+
+            return table;
+        }
+    }
+
     /// <summary>
     /// 儲存置資料庫用
     /// </summary>
@@ -317,12 +362,7 @@ namespace Creatidea.Opendata
         /// 建立資料表的SQL指令
         /// </summary>
         protected abstract string CreateTableSqlString();
-
-        /// <summary>
-        /// BlukCopy用的DataTable
-        /// </summary>
-        protected abstract DataTable ImportTable();
-
+        
         /// <summary>
         /// 建立新TABLE
         /// </summary>

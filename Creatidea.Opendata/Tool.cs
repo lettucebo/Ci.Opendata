@@ -8,6 +8,8 @@ using System.Net;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Creatidea.Opendata
 {
@@ -164,7 +166,141 @@ namespace Creatidea.Opendata
 
             return content;
         }
-        
+
+        /// <summary>
+        /// 取得地理位置資訊
+        /// </summary>
+        /// <param name="geocodeName">Name of the geocode.</param>
+        /// <returns></returns>
+        public static JObject GetAddressJson(string geocodeName)
+        {
+            var jsonString = Tool.GetWebContent("http://maps.googleapis.com/maps/api/geocode/json?sensor=false&language=zh-TW&address=" + geocodeName, Encoding.UTF8);
+
+            var jObject = JsonConvert.DeserializeObject<JObject>(jsonString);
+
+            if (jObject["status"].ToString() != "OK")
+            {
+                return null;
+            }
+
+            return  JsonConvert.DeserializeObject<JObject>(jObject["results"].ToString()); ;
+
+        }
+
+        /// <summary>
+        /// 計算兩點間的距離
+        /// https://dotblogs.com.tw/shadow/2012/06/08/72682
+        /// </summary>
+        public class CoordinateUtility
+        {
+            ///<summary>個人使用</summary>
+            ///<param name="longtiude">來源座標經度X</param>
+            ///<param name="latitude">來源座標緯度Y</param>
+            ///<param name="longtiude2">目標座標經度X</param>
+            ///<param name="latitude2">目標座標緯度</param>
+            ///<returns>回傳距離公尺</returns>
+            public static double Distance(double longtiude, double latitude, double longtiude2, double latitude2)
+            {
+
+                var lat1 = latitude;
+                var lon1 = longtiude;
+                var lat2 = latitude2;
+                var lon2 = longtiude2;
+                var earthRadius = 6371; //appxoximate radius in miles
+
+
+                var factor = Math.PI / 180;
+                var dLat = (lat2 - lat1) * factor;
+                var dLon = (lon2 - lon1) * factor;
+                var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) + Math.Cos(lat1 * factor)
+                  * Math.Cos(lat2 * factor) * Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+                var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+
+                double d = earthRadius * c * 1000;
+
+                return d;
+
+            }
+            
+            /// <summary>
+            /// 回傳的數據和個人使用接近，但回傳單位是"公里"
+            /// <para>出處：http://windperson.wordpress.com/2011/11/01/由兩點經緯度數值計算實際距離的方法/ </para>
+            /// </summary>
+            /// <param name="lat1"></param>
+            /// <param name="lng1"></param>
+            /// <param name="lat2"></param>
+            /// <param name="lng2"></param>
+            /// <returns>回傳距離公里</returns>
+            public static double DistanceOfTwoPoints(double lat1, double lng1, double lat2, double lng2)
+            {
+                double radLng1 = lng1 * Math.PI / 180.0;
+                double radLng2 = lng2 * Math.PI / 180.0;
+                double a = radLng1 - radLng2;
+                double b = (lat1 - lat2) * Math.PI / 180.0;
+                double s = 2 * Math.Asin(Math.Sqrt(Math.Pow(Math.Sin(a / 2), 2) +
+                    Math.Cos(radLng1) * Math.Cos(radLng2) * Math.Pow(Math.Sin(b / 2), 2))
+                    ) * 6378.137;
+                s = Math.Round(s * 10000) / 10000;
+
+                return s;
+            }
+            
+            private const double EarthRadius = 6378.137;
+            private static double rad(double d)
+            {
+                return d * Math.PI / 180.0;
+            }
+            /// <summary>
+            /// from Google Map 腳本
+            /// <para>出處：http://windperson.wordpress.com/2011/11/01/由兩點經緯度數值計算實際距離的方法/ </para>
+            /// </summary>
+            /// <param name="lat1"></param>
+            /// <param name="lng1"></param>
+            /// <param name="lat2"></param>
+            /// <param name="lng2"></param>
+            /// <returns>回傳單位 公尺</returns>
+            public static double GetDistance_Google(double lat1, double lng1, double lat2, double lng2)
+            {
+                double radLat1 = rad(lat1);
+                double radLat2 = rad(lat2);
+                double a = radLat1 - radLat2;
+                double b = rad(lng1) - rad(lng2);
+                double s = 2 * Math.Asin(Math.Sqrt(Math.Pow(Math.Sin(a / 2), 2) +
+                 Math.Cos(radLat1) * Math.Cos(radLat2) * Math.Pow(Math.Sin(b / 2), 2)));
+                s = s * EarthRadius;
+                s = Math.Round(s * 10000) / 10000;
+                return s;
+            }
+            
+            private static double ConvertDegreeToRadians(double degrees)
+            {
+                return (Math.PI / 180) * degrees;
+            }
+            /// <summary>
+            /// MSDN Magazine的範例程式碼
+            /// <para>出處：http://www.dotblogs.com.tw/jeff-yeh/archive/2009/02/04/7034.aspx</para>
+            /// </summary>
+            /// <param name="Lat1"></param>
+            /// <param name="Long1"></param>
+            /// <param name="Lat2"></param>
+            /// <param name="Long2"></param>
+            /// <returns>回傳單位公尺</returns>
+            public static double GetDistance_MSDN(double Lat1, double Long1, double Lat2, double Long2)
+            {
+                double Lat1r = ConvertDegreeToRadians(Lat1);
+                double Lat2r = ConvertDegreeToRadians(Lat2);
+                double Long1r = ConvertDegreeToRadians(Long1);
+                double Long2r = ConvertDegreeToRadians(Long2);
+
+                double R = 6371; // Earth's radius (km)
+                double d = Math.Acos(Math.Sin(Lat1r) *
+                  Math.Sin(Lat2r) + Math.Cos(Lat1r) *
+                   Math.Cos(Lat2r) *
+                   Math.Cos(Long2r - Long1r)) * R;
+                return d;
+            }
+        }
+
         public class CoordinateTransform
         {
             double a = 6378137.0;
@@ -271,7 +407,7 @@ namespace Creatidea.Opendata
                 // Calculate the Meridional Arc
                 double M = y / k0;
 
-                // Calculate Footprint Latitude
+                // Calculate Footprint latitude
                 double mu = M / (a * (1.0 - Math.Pow(e, 2) / 4.0 - 3 * Math.Pow(e, 4) / 64.0 - 5 * Math.Pow(e, 6) / 256.0));
                 double e1 = (1.0 - Math.Pow((1.0 - Math.Pow(e, 2)), 0.5)) / (1.0 + Math.Pow((1.0 - Math.Pow(e, 2)), 0.5));
 
@@ -282,7 +418,7 @@ namespace Creatidea.Opendata
 
                 double fp = mu + J1 * Math.Sin(2 * mu) + J2 * Math.Sin(4 * mu) + J3 * Math.Sin(6 * mu) + J4 * Math.Sin(8 * mu);
 
-                // Calculate Latitude and Longitude
+                // Calculate latitude and Longitude
 
                 double e2 = Math.Pow((e * a / b), 2);
                 double C1 = Math.Pow(e2 * Math.Cos(fp), 2);
@@ -373,7 +509,7 @@ namespace Creatidea.Opendata
 
                         property.SetValue(item, val, null);
                     }
-                    else if (property.PropertyType == typeof (int))
+                    else if (property.PropertyType == typeof(int))
                     {
                         int val = new int();
 
@@ -400,6 +536,125 @@ namespace Creatidea.Opendata
             }
 
             return item;
+        }
+
+        public static DataTable ToDataTable(this object[] objects)
+        {
+            if (objects != null && objects.Length > 0)
+            {
+                Type t = objects[0].GetType();
+                DataTable dt = new DataTable(t.Name);
+                foreach (PropertyInfo pi in t.GetProperties())
+                {
+                    dt.Columns.Add(new DataColumn(pi.Name));
+                }
+                foreach (var o in objects)
+                {
+                    DataRow dr = dt.NewRow();
+                    foreach (DataColumn dc in dt.Columns)
+                    {
+                        dr[dc.ColumnName] = o.GetType().GetProperty(dc.ColumnName).GetValue(o, null);
+                    }
+                    dt.Rows.Add(dr);
+                }
+                return dt;
+            }
+            return null;
+        }
+    }
+
+    public static class DataTableAndListExtensions
+    {
+        public static DataTable ListToDataTable<TResult>(this IEnumerable<TResult> ListValue) where TResult : class, new()
+        {
+            //建立一個回傳用的 DataTable
+            DataTable dt = new DataTable();
+
+            //取得映射型別
+            Type type = typeof(TResult);
+
+            //宣告一個 PropertyInfo 陣列，來接取 Type 所有的共用屬性
+            PropertyInfo[] PI_List = null;
+
+            foreach (var item in ListValue)
+            {
+                //判斷 DataTable 是否已經定義欄位名稱與型態
+                if (dt.Columns.Count == 0)
+                {
+                    //取得 Type 所有的共用屬性
+                    PI_List = item.GetType().GetProperties();
+
+                    //將 List 中的 名稱 與 型別，定義 DataTable 中的欄位 名稱 與 型別
+                    foreach (var item1 in PI_List)
+                    {
+                        if (item1.PropertyType.GUID == typeof(int?).GUID) //不能是Nullable<T>
+                        {
+                            dt.Columns.Add(item1.Name, item1.PropertyType.GenericTypeArguments.FirstOrDefault());
+                        }
+                        else
+                        {
+                            dt.Columns.Add(item1.Name, item1.PropertyType);
+                        }
+                    }
+                }
+
+                //在 DataTable 中建立一個新的列
+                DataRow dr = dt.NewRow();
+
+                //將資料足筆新增到 DataTable 中
+                foreach (var item2 in PI_List)
+                {
+                    if (item2.GetValue(item, null) == null)
+                    {
+                        dr[item2.Name] = DBNull.Value;
+                    }
+                    else
+                    {
+                        dr[item2.Name] = item2.GetValue(item, null);
+                    }
+
+                }
+
+                dt.Rows.Add(dr);
+            }
+
+            dt.AcceptChanges();
+
+            return dt;
+        }
+
+        public static List<TResult> DataTableToList<TResult>(this DataTable DataTableValue) where TResult : class, new()
+        {
+            //建立一個回傳用的 List<TResult>
+            List<TResult> Result_List = new List<TResult>();
+
+            //取得映射型別
+            Type type = typeof(TResult);
+
+            //儲存 DataTable 的欄位名稱
+            List<PropertyInfo> pr_List = new List<PropertyInfo>();
+
+            foreach (PropertyInfo item in type.GetProperties())
+            {
+                if (DataTableValue.Columns.IndexOf(item.Name) != -1)
+                    pr_List.Add(item);
+            }
+
+            //足筆將 DataTable 的值新增到 List<TResult> 中
+            foreach (DataRow item in DataTableValue.Rows)
+            {
+                TResult tr = new TResult();
+
+                foreach (PropertyInfo item1 in pr_List)
+                {
+                    if (item[item1.Name] != DBNull.Value)
+                        item1.SetValue(tr, item[item1.Name], null);
+                }
+
+                Result_List.Add(tr);
+            }
+
+            return Result_List;
         }
     }
 }
