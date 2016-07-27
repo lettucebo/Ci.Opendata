@@ -19,7 +19,7 @@ namespace Creatidea.Opendata.Taipei
         /// <seealso cref="Creatidea.Opendata.OpenData" />
         public class EstimateTime : OpenData
         {
-            private static object _staticLockObj = new object();
+            private static readonly object StaticLockObj = new object();
 
             public override JObject Data()
             {
@@ -80,7 +80,7 @@ namespace Creatidea.Opendata.Taipei
             {
                 var stringFormat = string.Format(BusStopEstimateTimeKeyFormat, routeId, stopId);
                 var inTime = int.MinValue;
-                lock (_staticLockObj)
+                lock (StaticLockObj)
                 {
                     if (_busStopEstimateTimeList.ContainsKey(stringFormat))
                     {
@@ -264,6 +264,9 @@ END
             }
         }
 
+        /// <summary>
+        /// 路線
+        /// </summary>
         public class Route : OpenDataDataBase
         {
             public override JObject Data()
@@ -290,32 +293,32 @@ CREATE TABLE [dbo].[TaipeiBusRoute](
 	[PathAttributeName] [nvarchar](50) NULL,
 	[PathAttributeNameEn] [nvarchar](100) NULL,
 	[BuildPeriod] [int] NULL,
-	[Departure] [nvarchar](50) NULL,
-	[DepartureEn] [nvarchar](100) NULL,
-	[Destination] [nvarchar](50) NULL,
-	[DestinationEn] [nvarchar](100) NULL,
+	[Departure] [nvarchar](100) NULL,
+	[DepartureEn] [nvarchar](500) NULL,
+	[Destination] [nvarchar](100) NULL,
+	[DestinationEn] [nvarchar](500) NULL,
 	[RealSequence] [int] NULL,
-	[Distance] [nvarchar](50) NULL,
-	[GoFirstBusTime] [nvarchar](50) NULL,
-	[BackFirstBusTime] [nvarchar](50) NULL,
-	[GoLastBusTime] [nvarchar](50) NULL,
-	[BackLastBusTime] [nvarchar](50) NULL,
-	[BusTimeDesc] [nvarchar](500) NULL,
-	[PeakHeadway] [nvarchar](50) NULL,
-	[OffPeakHeadway] [nvarchar](50) NULL,
-	[HeadwayDesc] [nvarchar](500) NULL,
-	[HolidayGoFirstBusTime] [nvarchar](50) NULL,
-	[HolidayBackFirstBusTime] [nvarchar](50) NULL,
-	[HolidayGoLastBusTime] [nvarchar](50) NULL,
-	[HolidayBackLastBusTime] [nvarchar](50) NULL,
-	[HolidayBusTimeDesc] [nvarchar](500) NULL,
-	[HolidayPeakHeadway] [nvarchar](50) NULL,
-	[HolidayOffPeakHeadway] [nvarchar](50) NULL,
-	[HolidayHeadwayDesc] [nvarchar](500) NULL,
-	[SegmentBuffer] [nvarchar](50) NULL,
-	[SegmentBufferEn] [nvarchar](100) NULL,
+	[Distance] [float] NULL,
+	[GoFirstBusTime] [nvarchar](4) NULL,
+	[BackFirstBusTime] [nvarchar](4) NULL,
+	[GoLastBusTime] [nvarchar](4) NULL,
+	[BackLastBusTime] [nvarchar](4) NULL,
+	[BusTimeDesc] [nvarchar](max) NULL,
+	[PeakHeadway] [nvarchar](4) NULL,
+	[OffPeakHeadway] [nvarchar](4) NULL,
+	[HeadwayDesc] [nvarchar](max) NULL,
+	[HolidayGoFirstBusTime] [nvarchar](4) NULL,
+	[HolidayBackFirstBusTime] [nvarchar](4) NULL,
+	[HolidayGoLastBusTime] [nvarchar](4) NULL,
+	[HolidayBackLastBusTime] [nvarchar](4) NULL,
+	[HolidayBusTimeDesc] [nvarchar](max) NULL,
+	[HolidayPeakHeadway] [nvarchar](4) NULL,
+	[HolidayOffPeakHeadway] [nvarchar](4) NULL,
+	[HolidayHeadwayDesc] [nvarchar](max) NULL,
+	[SegmentBuffer] [nvarchar](max) NULL,
+	[SegmentBufferEn] [nvarchar](max) NULL,
 	[TicketPriceDescription] [nvarchar](50) NULL,
-	[TicketPriceDescriptionEn] [nvarchar](100) NULL
+	[TicketPriceDescriptionEn] [nvarchar](50) NULL
 ) ON [PRIMARY]
 END
 ";
@@ -324,24 +327,41 @@ END
             protected override DataTable ImportTable()
             {
                 var dataTable = new DataTable();
-                dataTable.Columns.Add("Id", typeof(string));
-                dataTable.Columns.Add("Area", typeof(string));
+                dataTable.Columns.Add("Id", typeof(int));
+                dataTable.Columns.Add("ProviderId", typeof(int));
+                dataTable.Columns.Add("ProviderName", typeof(string));
                 dataTable.Columns.Add("Name", typeof(string));
-                dataTable.Columns.Add("Type", typeof(int));
-                dataTable.Columns.Add("Type2", typeof(int));
-                dataTable.Columns.Add("Summary", typeof(string));
-                dataTable.Columns.Add("Address", typeof(string));
-                dataTable.Columns.Add("Tel", typeof(string));
-                dataTable.Columns.Add("PayEx", typeof(string));
-                dataTable.Columns.Add("ServiceTime", typeof(string));
-                dataTable.Columns.Add("TotalCar", typeof(int));
-                dataTable.Columns.Add("TotalMotor", typeof(int));
-                dataTable.Columns.Add("TotalBike", typeof(int));
-                dataTable.Columns.Add("PregnancyFirst", typeof(int));
-                dataTable.Columns.Add("HandicapFirst", typeof(int));
-
-                dataTable.Columns.Add("Latitude", typeof(float));
-                dataTable.Columns.Add("Longitude", typeof(float));
+                dataTable.Columns.Add("NameEn", typeof(string));
+                dataTable.Columns.Add("PathAttributeId", typeof(int));
+                dataTable.Columns.Add("PathAttributeName", typeof(string));
+                dataTable.Columns.Add("PathAttributeNameEn", typeof(string));
+                dataTable.Columns.Add("BuildPeriod", typeof(int));
+                dataTable.Columns.Add("Departure", typeof(string));
+                dataTable.Columns.Add("DepartureEn", typeof(string));
+                dataTable.Columns.Add("Destination", typeof(string));
+                dataTable.Columns.Add("DestinationEn", typeof(string));
+                dataTable.Columns.Add("RealSequence", typeof(int));
+                dataTable.Columns.Add("Distance", typeof(float));
+                dataTable.Columns.Add("GoFirstBusTime", typeof(string));
+                dataTable.Columns.Add("BackFirstBusTime", typeof(string));
+                dataTable.Columns.Add("GoLastBusTime", typeof(string));
+                dataTable.Columns.Add("BackLastBusTime", typeof(string));
+                dataTable.Columns.Add("BusTimeDesc", typeof(string));
+                dataTable.Columns.Add("PeakHeadway", typeof(string));
+                dataTable.Columns.Add("OffPeakHeadway", typeof(string));
+                dataTable.Columns.Add("HeadwayDesc", typeof(string));
+                dataTable.Columns.Add("HolidayGoFirstBusTime", typeof(string));
+                dataTable.Columns.Add("HolidayBackFirstBusTime", typeof(string));
+                dataTable.Columns.Add("HolidayGoLastBusTime", typeof(string));
+                dataTable.Columns.Add("HolidayBackLastBusTime", typeof(string));
+                dataTable.Columns.Add("HolidayBusTimeDesc", typeof(string));
+                dataTable.Columns.Add("HolidayPeakHeadway", typeof(string));
+                dataTable.Columns.Add("HolidayOffPeakHeadway", typeof(string));
+                dataTable.Columns.Add("HolidayHeadwayDesc", typeof(string));
+                dataTable.Columns.Add("SegmentBuffer", typeof(string));
+                dataTable.Columns.Add("SegmentBufferEn", typeof(string));
+                dataTable.Columns.Add("TicketPriceDescription", typeof(string));
+                dataTable.Columns.Add("TicketPriceDescriptionEn", typeof(string));
 
                 return dataTable;
             }
@@ -356,6 +376,40 @@ END
                     var row = dataTable.NewRow();
 
                     row["Id"] = item.Id;
+                    row["ProviderId"] = item.ProviderId;
+                    row["ProviderName"] = item.ProviderName;
+                    row["Name"] = item.Name;
+                    row["NameEn"] = item.NameEn;
+                    row["PathAttributeId"] = item.PathAttributeId;
+                    row["PathAttributeName"] = item.PathAttributeName;
+                    row["PathAttributeNameEn"] = item.PathAttributeNameEn;
+                    row["BuildPeriod"] = item.BuildPeriod;
+                    row["Departure"] = item.Departure;
+                    row["DepartureEn"] = item.DepartureEn;
+                    row["Destination"] = item.Destination;
+                    row["DestinationEn"] = item.DestinationEn;
+                    row["RealSequence"] = item.RealSequence;
+                    row["Distance"] = item.Distance;
+                    row["GoFirstBusTime"] = item.GoFirstBusTime;
+                    row["BackFirstBusTime"] = item.BackFirstBusTime;
+                    row["GoLastBusTime"] = item.GoLastBusTime;
+                    row["BackLastBusTime"] = item.BackLastBusTime;
+                    row["BusTimeDesc"] = item.BusTimeDesc;
+                    row["PeakHeadway"] = item.PeakHeadway;
+                    row["OffPeakHeadway"] = item.OffPeakHeadway;
+                    row["HeadwayDesc"] = item.HeadwayDesc;
+                    row["HolidayGoFirstBusTime"] = item.HolidayGoFirstBusTime;
+                    row["HolidayBackFirstBusTime"] = item.HolidayBackFirstBusTime;
+                    row["HolidayGoLastBusTime"] = item.HolidayGoLastBusTime;
+                    row["HolidayBackLastBusTime"] = item.HolidayBackLastBusTime;
+                    row["HolidayBusTimeDesc"] = item.HolidayBusTimeDesc;
+                    row["HolidayPeakHeadway"] = item.HolidayPeakHeadway;
+                    row["HolidayOffPeakHeadway"] = item.HolidayOffPeakHeadway;
+                    row["HolidayHeadwayDesc"] = item.HolidayHeadwayDesc;
+                    row["SegmentBuffer"] = item.SegmentBuffer;
+                    row["SegmentBufferEn"] = item.SegmentBufferEn;
+                    row["TicketPriceDescription"] = item.TicketPriceDescription;
+                    row["TicketPriceDescriptionEn"] = item.TicketPriceDescriptionEn;
 
                     dataTable.Rows.Add(row);
                 }
@@ -433,7 +487,7 @@ END
                 /// <summary>
                 /// 總往返里程(公里/全程)
                 /// </summary>
-                public string Distance { get; set; }
+                public float Distance { get; set; }
                 /// <summary>
                 /// 站牌顯示時使用，去程第一班發車時間(hhmm)
                 /// </summary>
@@ -551,13 +605,36 @@ END
         /// <seealso cref="OpenDataSchedule" />
         public class Stop : OpenDataSchedule
         {
+            private Bus.Stop _main = new Bus.Stop();
+
             public override void Run()
             {
+                _main.DataSave();
             }
 
             public override void Dispose()
             {
-                throw new NotImplementedException();
+                _main.Dispose();
+                _main = null;
+            }
+        }
+        
+        /// <summary>
+        /// 路線資訊排程
+        /// </summary>
+        public class Route : OpenDataSchedule
+        {
+            private Bus.Route _main = new Bus.Route();
+
+            public override void Run()
+            {
+                _main.DataSave();
+            }
+
+            public override void Dispose()
+            {
+                _main.Dispose();
+                _main = null;
             }
         }
     }
