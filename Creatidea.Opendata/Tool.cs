@@ -172,19 +172,45 @@ namespace Creatidea.Opendata
         /// </summary>
         /// <param name="geocodeName">Name of the geocode.</param>
         /// <returns></returns>
-        public static JObject GetAddressJson(string geocodeName)
+        private static JObject GetAddressJson(string geocodeName)
         {
+            re:
             var jsonString = Tool.GetWebContent("http://maps.googleapis.com/maps/api/geocode/json?sensor=false&language=zh-TW&address=" + geocodeName, Encoding.UTF8);
 
             var jObject = JsonConvert.DeserializeObject<JObject>(jsonString);
 
             if (jObject["status"].ToString() != "OK")
             {
+                if (jObject["status"].ToString() == "OVER_QUERY_LIMIT")
+                {
+                    System.Threading.Thread.Sleep(2000);
+                    goto re;
+                }
                 return null;
             }
 
-            return  JsonConvert.DeserializeObject<JObject>(jObject["results"].ToString()); ;
+            return jObject;
 
+        }
+
+        public static ILocation GetAddressLatLng(ILocation location)
+        {
+            var jObj = GetAddressJson(location.Address);
+            if (jObj == null)
+            {
+                return location;
+            }
+
+            var jItem = jObj["results"].Children().FirstOrDefault();
+            if (jItem == null)
+            {
+                return location;
+            }
+            //location.Address = jItem["formatted_address"].ToString();
+            location.Latitude = (float)jItem["geometry"]["location"]["lat"];
+            location.Longitude = (float)jItem["geometry"]["location"]["lng"];
+
+            return location;
         }
 
         /// <summary>
@@ -221,7 +247,7 @@ namespace Creatidea.Opendata
                 return d;
 
             }
-            
+
             /// <summary>
             /// 回傳的數據和個人使用接近，但回傳單位是"公里"
             /// <para>出處：http://windperson.wordpress.com/2011/11/01/由兩點經緯度數值計算實際距離的方法/ </para>
@@ -244,7 +270,7 @@ namespace Creatidea.Opendata
 
                 return s;
             }
-            
+
             private const double EarthRadius = 6378.137;
             private static double rad(double d)
             {
@@ -271,7 +297,7 @@ namespace Creatidea.Opendata
                 s = Math.Round(s * 10000) / 10000;
                 return s;
             }
-            
+
             private static double ConvertDegreeToRadians(double degrees)
             {
                 return (Math.PI / 180) * degrees;
@@ -656,5 +682,12 @@ namespace Creatidea.Opendata
 
             return Result_List;
         }
+    }
+
+    public interface ILocation
+    {
+        string Address { get; set; }
+        float Latitude { get; set; }
+        float Longitude { get; set; }
     }
 }

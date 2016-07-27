@@ -33,7 +33,8 @@ namespace Creatidea.Opendata.Test
                 //new Taipei.ArtsMuseum(),
                 //new Taipei.Parking.Description(),
                 //new Taipei.YouBike.Station(),
-                new Taipei.TravelAttractions.Chinese(),
+                //new Taipei.TravelAttractions.Chinese(),
+                new Taipei.ShoppingArea.Location(),
             };
 
             foreach (var opendata in list)
