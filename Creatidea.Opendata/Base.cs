@@ -207,7 +207,7 @@ namespace Creatidea.Opendata
         /// 讀取資料
         /// </summary>
         /// <returns></returns>
-        public abstract JObject Data();
+        protected abstract JObject Data();
 
         /// <summary>
         /// 儲存資料(物件)
@@ -303,6 +303,54 @@ namespace Creatidea.Opendata
         }
     }
 
+    public abstract class BaseData
+    {
+        /// <summary>
+        /// 連線字串(可在Config appSettings增加 OpenData.ConnectionStringName 指定共用的連線字串)
+        /// </summary>
+        protected string ConnectionString
+        {
+            get
+            {
+                var connectionStringKeyWord = "OpenData";
+
+                if (!string.IsNullOrEmpty(ConfigurationManager.AppSettings["OpenData.ConnectionStringName"]))
+                {
+                    connectionStringKeyWord = ConfigurationManager.AppSettings["OpenData.ConnectionStringName"];
+                }
+
+                var connectionString = ConfigurationManager.ConnectionStrings[connectionStringKeyWord].ConnectionString;
+
+                if (connectionString.StartsWith("metadata="))
+                {
+                    var connectionStringArray = connectionString.Split(new[] { "\"" }, StringSplitOptions.RemoveEmptyEntries);
+
+                    connectionString = string.Empty;
+
+                    var isFrist = true;
+                    foreach (var str in connectionStringArray)
+                    {
+                        if (isFrist)
+                        {
+                            isFrist = false;
+                            continue;
+                        }
+
+                        connectionString += str;
+                    }
+                }
+
+                return connectionString;
+            }
+
+        }
+
+        /// <summary>
+        /// 資料庫連線逾時時間
+        /// </summary>
+        protected int TimeOut = 3600;
+    }
+    
     /// <summary>
     /// 儲存置資料庫用
     /// </summary>

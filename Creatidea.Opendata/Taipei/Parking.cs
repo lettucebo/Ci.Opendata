@@ -22,7 +22,7 @@ namespace Creatidea.Opendata.Taipei
         {
             private static object _staticLockObj = new object();
 
-            public override JObject Data()
+            protected override JObject Data()
             {
                 //var jsonString = Tool.GetWebContent("http://data.taipei/tcmsv/allavailable", Encoding.UTF8);
                 var jsonString = Tool.GetGzContent("http://data.taipei/tcmsv/allavailable", Encoding.Default);
@@ -156,8 +156,8 @@ END
 
 ";
             }
-            
-            public override JObject Data()
+
+            protected override JObject Data()
             {
                 var jsonString = Tool.GetGzContent("http://data.taipei/tcmsv/alldesc", Encoding.Default);
 
@@ -380,8 +380,7 @@ END
 
 
             }
-
-
+            
             private DataTable GetById(string id)
             {
                 DataTable table = null;
@@ -394,7 +393,7 @@ END
 
                 sqlCommand.CommandTimeout = TimeOut;
                 sqlCommand.CommandType = CommandType.Text;
-                sqlCommand.CommandText = @" SELECT * FROM TaipeiParkingArea WHERE Id = @Id ";
+                sqlCommand.CommandText = string.Format(" SELECT * FROM {0} WHERE Id = @Id ", TableName());
                 sqlCommand.Parameters.Add("@Id", SqlDbType.NVarChar).Value = id;
 
                 table = new DataTable();

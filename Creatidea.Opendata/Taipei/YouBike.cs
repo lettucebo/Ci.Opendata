@@ -20,9 +20,9 @@ namespace Creatidea.Opendata.Taipei
         /// </summary>
         public class Count : OpenData
         {
-            private static object _staticLockObj = new object();
+            private static readonly object StaticLockObj = new object();
 
-            public override JObject Data()
+            protected override JObject Data()
             {
                 var jsonString = Tool.GetWebContent("http://data.taipei/youbike", Encoding.UTF8);
 
@@ -92,7 +92,7 @@ namespace Creatidea.Opendata.Taipei
             public static int GetBike(string id)
             {
                 var available = int.MinValue;
-                lock (_staticLockObj)
+                lock (StaticLockObj)
                 {
                     if (_ubikeList.ContainsKey(id))
                     {
@@ -144,7 +144,7 @@ END
 
 ";
             }
-            public override JObject Data()
+            protected override JObject Data()
             {
                 var jsonString = Tool.GetWebContent("http://data.taipei/youbike", Encoding.UTF8);
 
@@ -274,20 +274,11 @@ END
 
             }
 
-            public static IList<StationEntity> Get(float lat, float lng, int locationRadius)
-            {
-                IList<StationEntity> list = null;
-
-                using (var openData = new Station())
-                {
-                    var table = openData.GetByLatLng(lat, lng, locationRadius);
-
-                    list = table.ToList<StationEntity>();
-                }
-
-                return list;
-            }
-
+            /// <summary>
+            /// 取得站點資料
+            /// </summary>
+            /// <param name="id">The identifier.</param>
+            /// <returns></returns>
             public static StationEntity Get(int id)
             {
                 StationEntity entity = null;
@@ -300,6 +291,27 @@ END
                 }
 
                 return entity;
+            }
+            
+            /// <summary>
+            /// 取得站點資料
+            /// </summary>
+            /// <param name="lat">緯度</param>
+            /// <param name="lng">經度</param>
+            /// <param name="locationRadius">半徑範圍</param>
+            /// <returns></returns>
+            public static IList<StationEntity> Get(float lat, float lng, int locationRadius)
+            {
+                IList<StationEntity> list = null;
+
+                using (var openData = new Station())
+                {
+                    var table = openData.GetByLatLng(lat, lng, locationRadius);
+
+                    list = table.ToList<StationEntity>();
+                }
+
+                return list;
             }
 
             private DataTable GetById(int id)

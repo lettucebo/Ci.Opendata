@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,11 +10,16 @@ using Newtonsoft.Json.Linq;
 
 namespace Creatidea.Opendata.Taipei
 {
+    /// <summary>
+    /// 住宿資訊
+    /// </summary>
     public class Hotel
     {
+        /// <summary>
+        /// 中文
+        /// </summary>
         public class Chinese : OpenDataDataBaseLocation
         {
-
             protected override string TableName()
             {
                 return "TaipeiHotelChinese";
@@ -47,7 +53,7 @@ END
 ";
             }
 
-            public override JObject Data()
+            protected override JObject Data()
             {
                 var jsonString = Tool.GetWebContent("http://data.taipei/opendata/datalist/apiAccess?scope=resourceAquire&rid=6f4e0b9b-8cb1-4b1d-a5c4-febd90f62469", Encoding.UTF8);
 
@@ -190,6 +196,73 @@ END
                 public float Latitude { get; set; }
             }
 
+            /// <summary>
+            /// 取得住宿資訊
+            /// </summary>
+            /// <param name="id">The identifier.</param>
+            /// <returns></returns>
+            public static TravelAttractionEntity Get(string id)
+            {
+                TravelAttractionEntity entity = null;
+
+                using (var openData = new Chinese())
+                {
+                    var table = openData.GetById(id);
+
+                    entity = table.ToList<TravelAttractionEntity>().FirstOrDefault();
+                }
+
+                return entity;
+            }
+
+            /// <summary>
+            /// 取得住宿資訊
+            /// </summary>
+            /// <param name="lat">緯度</param>
+            /// <param name="lng">經度</param>
+            /// <param name="locationRadius">半徑範圍</param>
+            /// <returns></returns>
+            public static IList<TravelAttractionEntity> Get(float lat, float lng, int locationRadius = 1)
+            {
+                IList<TravelAttractionEntity> list = null;
+
+                using (var openData = new Chinese())
+                {
+                    var table = openData.GetByLatLng(lat, lng, locationRadius);
+
+                    list = table.ToList<TravelAttractionEntity>();
+                }
+
+                return list;
+            }
+
+            private DataTable GetById(string id)
+            {
+                DataTable table = null;
+
+                var sqlConnection = new SqlConnection(ConnectionString);
+
+                sqlConnection.Open();
+
+                var sqlCommand = sqlConnection.CreateCommand();
+
+                sqlCommand.CommandTimeout = TimeOut;
+                sqlCommand.CommandType = CommandType.Text;
+                sqlCommand.CommandText = string.Format(" SELECT * FROM {0} WHERE Id = @Id ", TableName());
+                sqlCommand.Parameters.Add("@Id", SqlDbType.NVarChar).Value = id;
+
+                table = new DataTable();
+                var adapter = new SqlDataAdapter(sqlCommand);
+                adapter.Fill(table);
+
+                sqlCommand.ExecuteNonQuery();
+
+                sqlConnection.Close();
+                sqlConnection.Dispose();
+
+
+                return table;
+            }
         }
 
     }

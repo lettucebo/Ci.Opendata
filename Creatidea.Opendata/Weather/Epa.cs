@@ -13,7 +13,7 @@ namespace Creatidea.Opendata.Weather
     /// </summary>
     public class EpaUv : OpenData
     {
-        private static object _staticLockObj = new object();
+        private static readonly object _staticLockObj = new object();
 
         public class UvModel
         {
@@ -26,7 +26,7 @@ namespace Creatidea.Opendata.Weather
             public string PublishTime { get; set; }
         }
 
-        public override JObject Data()
+        protected override JObject Data()
         {
             var xmlString = Tool.GetWebContent("http://opendata.epa.gov.tw/ws/Data/UV/?format=xml", Encoding.UTF8);
 

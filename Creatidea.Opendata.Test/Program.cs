@@ -30,6 +30,7 @@ namespace Creatidea.Opendata.Test
             {
                 //new Taipei.Bus.Route(),
                 //new Taipei.Bus.Stop(),
+                //new Taipei.Bus(),
                 //new Taipei.ArtsMuseum(),
                 //new Taipei.Parking.Description(),
                 //new Taipei.YouBike.Station(),
@@ -37,12 +38,22 @@ namespace Creatidea.Opendata.Test
                 //new Taipei.ShoppingArea.Location(),
                 //new Taipei.CulturalHeritage(),
                 //new Taipei.Metro.Entrance(),
-                new Taipei.Hotel.Chinese(),
+                //new Taipei.Hotel.Chinese(),
             };
 
             foreach (var opendata in list)
             {
                 opendata.DataSave();
+            }
+
+            var stations = Opendata.Taipei.Bus.Stop.Get(Convert.ToSingle("25.0477498"), Convert.ToSingle("121.5170497"), 2);
+
+
+            var routes = Opendata.Taipei.Bus.Route.Get(stations.Select(x => x.Id).Distinct().ToArray());
+
+            foreach (var i in routes)
+            {
+                Console.WriteLine(i.Name + "(" + i.PathAttributeName + ")");
             }
 
             //var s = Opendata.Taipei.Parking.Description.Get((float)25.034006, (float)121.543749);

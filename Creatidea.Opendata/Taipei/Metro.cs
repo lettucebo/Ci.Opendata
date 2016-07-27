@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -44,8 +45,8 @@ CREATE TABLE [dbo].[TaipeiMetroEntrance](
 END
 ";
             }
-            
-            public override JObject Data()
+
+            protected override JObject Data()
             {
                 var jsonString = Tool.GetWebContent("http://data.taipei/opendata/datalist/apiAccess?scope=resourceAquire&rid=9c2fa3e8-118e-4b49-8a7c-57edd29ca3ec", Encoding.UTF8);
 
@@ -75,8 +76,75 @@ END
                 public float Latitude { get; set; }
                 [JsonProperty("經度")]
                 public float Longitude { get; set; }
-            } 
+            }
 
+            /// <summary>
+            /// 取得捷運出口
+            /// </summary>
+            /// <param name="id">The identifier.</param>
+            /// <returns></returns>
+            public static EntranceEntity Get(string id)
+            {
+                EntranceEntity entity = null;
+
+                using (var openData = new Entrance())
+                {
+                    var table = openData.GetById(id);
+
+                    entity = table.ToList<EntranceEntity>().FirstOrDefault();
+                }
+
+                return entity;
+            }
+
+            /// <summary>
+            /// 取得捷運出口
+            /// </summary>
+            /// <param name="lat">緯度</param>
+            /// <param name="lng">經度</param>
+            /// <param name="locationRadius">半徑範圍</param>
+            /// <returns></returns>
+            public static IList<EntranceEntity> Get(float lat, float lng, int locationRadius = 1)
+            {
+                IList<EntranceEntity> list = null;
+
+                using (var openData = new Entrance())
+                {
+                    var table = openData.GetByLatLng(lat, lng, locationRadius);
+
+                    list = table.ToList<EntranceEntity>();
+                }
+
+                return list;
+            }
+
+            private DataTable GetById(string id)
+            {
+                DataTable table = null;
+
+                var sqlConnection = new SqlConnection(ConnectionString);
+
+                sqlConnection.Open();
+
+                var sqlCommand = sqlConnection.CreateCommand();
+
+                sqlCommand.CommandTimeout = TimeOut;
+                sqlCommand.CommandType = CommandType.Text;
+                sqlCommand.CommandText = string.Format(" SELECT * FROM {0} WHERE Id = @Id ", TableName());
+                sqlCommand.Parameters.Add("@Id", SqlDbType.NVarChar).Value = id;
+
+                table = new DataTable();
+                var adapter = new SqlDataAdapter(sqlCommand);
+                adapter.Fill(table);
+
+                sqlCommand.ExecuteNonQuery();
+
+                sqlConnection.Close();
+                sqlConnection.Dispose();
+
+
+                return table;
+            }
         }
 
 

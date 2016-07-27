@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +15,9 @@ namespace Creatidea.Opendata.Taipei
     /// </summary>
     public class ShoppingArea
     {
+        /// <summary>
+        /// 有地理座標
+        /// </summary>
         public class Location : OpenDataDataBaseLocation
         {
             protected override string TableName()
@@ -44,7 +48,7 @@ END
 ";
             }
 
-            public override JObject Data()
+            protected override JObject Data()
             {
                 var jsonString = Tool.GetWebContent("http://data.taipei/opendata/datalist/apiAccess?scope=resourceAquire&rid=666d17d8-f759-42bf-9186-b15260445a9b", Encoding.UTF8);
 
@@ -74,8 +78,7 @@ END
                 
                 return list.ListToDataTable();
             }
-
-
+            
             public class ShoppingAreaLocationEntity: ShoppingAreaEntity, ILocation
             {
                 /// <summary>
@@ -87,6 +90,75 @@ END
                 /// </summary>
                 public float Longitude { get; set; }
             }
+
+            /// <summary>
+            /// 取得臺北市商圈
+            /// </summary>
+            /// <param name="id">The identifier.</param>
+            /// <returns></returns>
+            public static ShoppingAreaLocationEntity Get(string id)
+            {
+                ShoppingAreaLocationEntity entity = null;
+
+                using (var openData = new Location())
+                {
+                    var table = openData.GetById(id);
+
+                    entity = table.ToList<ShoppingAreaLocationEntity>().FirstOrDefault();
+                }
+
+                return entity;
+            }
+
+            /// <summary>
+            /// 取得臺北市商圈
+            /// </summary>
+            /// <param name="lat">緯度</param>
+            /// <param name="lng">經度</param>
+            /// <param name="locationRadius">半徑範圍</param>
+            /// <returns></returns>
+            public static IList<ShoppingAreaLocationEntity> Get(float lat, float lng, int locationRadius = 1)
+            {
+                IList<ShoppingAreaLocationEntity> list = null;
+
+                using (var openData = new Location())
+                {
+                    var table = openData.GetByLatLng(lat, lng, locationRadius);
+
+                    list = table.ToList<ShoppingAreaLocationEntity>();
+                }
+
+                return list;
+            }
+
+            private DataTable GetById(string id)
+            {
+                DataTable table = null;
+
+                var sqlConnection = new SqlConnection(ConnectionString);
+
+                sqlConnection.Open();
+
+                var sqlCommand = sqlConnection.CreateCommand();
+
+                sqlCommand.CommandTimeout = TimeOut;
+                sqlCommand.CommandType = CommandType.Text;
+                sqlCommand.CommandText = string.Format(" SELECT * FROM {0} WHERE Id = @Id ", TableName());
+                sqlCommand.Parameters.Add("@Id", SqlDbType.NVarChar).Value = id;
+
+                table = new DataTable();
+                var adapter = new SqlDataAdapter(sqlCommand);
+                adapter.Fill(table);
+
+                sqlCommand.ExecuteNonQuery();
+
+                sqlConnection.Close();
+                sqlConnection.Dispose();
+
+
+                return table;
+            }
+
         }
 
         public class ShoppingAreaEntity

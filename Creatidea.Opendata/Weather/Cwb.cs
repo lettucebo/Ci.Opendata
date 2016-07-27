@@ -13,9 +13,9 @@ namespace Creatidea.Opendata.Weather
     /// </summary>
     public class Cwb : OpenData
     {
-        private static object _staticLockObj = new object();
+        private static readonly object StaticLockObj = new object();
 
-        public override JObject Data()
+        protected override JObject Data()
         {
             //http://opendata.cwb.gov.tw/datalist
             var dataId = "F-C0032-001";
@@ -55,7 +55,7 @@ namespace Creatidea.Opendata.Weather
         {
             get
             {
-                lock (_staticLockObj)
+                lock (StaticLockObj)
                 {
                     return WatherData;
                 }

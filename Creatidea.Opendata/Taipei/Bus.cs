@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -11,7 +13,7 @@ namespace Creatidea.Opendata.Taipei
     /// <summary>
     /// 公車資訊
     /// </summary>
-    public class Bus
+    public class Bus : OpenData
     {
         /// <summary>
         /// 到站時間
@@ -21,7 +23,7 @@ namespace Creatidea.Opendata.Taipei
         {
             private static readonly object StaticLockObj = new object();
 
-            public override JObject Data()
+            protected override JObject Data()
             {
                 var jsonString = Tool.GetWebContent("http://data.taipei/bus/EstimateTime", Encoding.UTF8, gZip: true, onlyGzip: true);
 
@@ -109,7 +111,18 @@ namespace Creatidea.Opendata.Taipei
         /// <seealso cref="Creatidea.Opendata.OpenData" />
         public class Stop : OpenDataDataBaseLocation
         {
-            public override JObject Data()
+            public static string ClassTableName
+            {
+                get
+                {
+                    using (var thisClass = new Stop())
+                    {
+                        return thisClass.TableName();
+                    }
+                }
+            }
+
+            protected override JObject Data()
             {
                 var jsonString = Tool.GetWebContent("http://data.taipei/bus/Stop", Encoding.UTF8, gZip: true, onlyGzip: true);
 
@@ -149,11 +162,11 @@ END
 
 ";
             }
-            
+
             protected override DataTable Resolve(JObject jObj)
             {
                 var list = JsonConvert.DeserializeObject<List<BusStopEntity>>(jObj["BusInfo"].ToString());
-                
+
                 return list.ListToDataTable();
             }
 
@@ -207,6 +220,74 @@ END
                 [JsonProperty("showLon")]
                 public float Longitude { get; set; }
             }
+
+            /// <summary>
+            /// 取得站點資料
+            /// </summary>
+            /// <param name="id">The identifier.</param>
+            /// <returns></returns>
+            public static BusStopEntity Get(int id)
+            {
+                BusStopEntity entity = null;
+
+                using (var openData = new Stop())
+                {
+                    var table = openData.GetById(id);
+
+                    entity = table.ToList<BusStopEntity>().FirstOrDefault();
+                }
+
+                return entity;
+            }
+
+            /// <summary>
+            /// 取得站點資料
+            /// </summary>
+            /// <param name="lat">緯度</param>
+            /// <param name="lng">經度</param>
+            /// <param name="locationRadius">半徑範圍</param>
+            /// <returns></returns>
+            public static IList<BusStopEntity> Get(float lat, float lng, int locationRadius)
+            {
+                IList<BusStopEntity> list = null;
+
+                using (var openData = new Stop())
+                {
+                    var table = openData.GetByLatLng(lat, lng, locationRadius);
+
+                    list = table.ToList<BusStopEntity>();
+                }
+
+                return list;
+            }
+
+            private DataTable GetById(int id)
+            {
+                DataTable table = null;
+
+                var sqlConnection = new SqlConnection(ConnectionString);
+
+                sqlConnection.Open();
+
+                var sqlCommand = sqlConnection.CreateCommand();
+
+                sqlCommand.CommandTimeout = TimeOut;
+                sqlCommand.CommandType = CommandType.Text;
+                sqlCommand.CommandText = string.Format(" SELECT * FROM {0} WHERE Id = @Id ", TableName());
+                sqlCommand.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+
+                table = new DataTable();
+                var adapter = new SqlDataAdapter(sqlCommand);
+                adapter.Fill(table);
+
+                sqlCommand.ExecuteNonQuery();
+
+                sqlConnection.Close();
+                sqlConnection.Dispose();
+
+
+                return table;
+            }
         }
 
         /// <summary>
@@ -214,7 +295,18 @@ END
         /// </summary>
         public class Route : OpenDataDataBase
         {
-            public override JObject Data()
+            public static string ClassTableName
+            {
+                get
+                {
+                    using (var thisClass = new Route())
+                    {
+                        return thisClass.TableName();
+                    }
+                }
+            }
+
+            protected override JObject Data()
             {
                 var jsonString = Tool.GetWebContent("http://data.taipei/bus/ROUTE", Encoding.UTF8, gZip: true, onlyGzip: true);
 
@@ -268,11 +360,11 @@ CREATE TABLE [dbo].[TaipeiBusRoute](
 END
 ";
             }
-            
+
             protected override DataTable Resolve(JObject jObj)
             {
                 var list = JsonConvert.DeserializeObject<List<BusRouteEntity>>(jObj["BusInfo"].ToString());
-                
+
                 return list.ListToDataTable();
             }
 
@@ -430,6 +522,93 @@ END
                 /// </summary>
                 public string TicketPriceDescriptionEn { get; set; }
             }
+
+            public static IEnumerable<BusRouteEntity> Get(int[] stationIds)
+            {
+                IEnumerable<BusRouteEntity> list = null;
+
+                using (var openData = new Route())
+                {
+                    var table = openData.GetByStationIds(stationIds);
+
+                    list = table.ToList<BusRouteEntity>();
+                }
+
+                return list;
+            }
+
+            protected DataTable GetByStationIds(int[] stationIds)
+            {
+                DataTable table = null;
+
+                if (stationIds == null || stationIds.Length < 1)
+                {
+                    return null;
+                }
+
+                var sqlConnection = new SqlConnection(ConnectionString);
+
+                sqlConnection.Open();
+
+                var sqlCommand = sqlConnection.CreateCommand();
+
+                sqlCommand.CommandTimeout = TimeOut;
+                sqlCommand.CommandType = CommandType.Text;
+
+                var inString = string.Empty;
+                for (var i = 0; i < stationIds.Length; i++)
+                {
+                    if (!string.IsNullOrEmpty(inString))
+                    {
+                        inString += ",";
+                    }
+
+                    var pString = string.Format("@Id{0}", i);
+
+                    inString += pString;
+                    sqlCommand.Parameters.Add(pString, SqlDbType.Int).Value = stationIds[i];
+                }
+
+                sqlCommand.CommandText = string.Format(" SELECT * FROM {0} WHERE Id IN ( {1} ) ", TableName(), inString);
+
+                table = new DataTable();
+                var adapter = new SqlDataAdapter(sqlCommand);
+                adapter.Fill(table);
+
+                sqlCommand.ExecuteNonQuery();
+
+                sqlConnection.Close();
+                sqlConnection.Dispose();
+
+
+                return table;
+            }
+        }
+
+        private readonly List<OpenData> _list = new List<OpenData>
+        {
+            new Stop(),
+            new Route(),
+        };
+
+        protected override JObject Data()
+        {
+            foreach (var openData in _list)
+            {
+                openData.DataSave();
+            }
+
+            return null;
+        }
+
+        protected override void Save(JObject jObj)
+        {
+
+        }
+
+        public override void Dispose()
+        {
+
         }
     }
 
@@ -477,7 +656,7 @@ END
                 _main = null;
             }
         }
-        
+
         /// <summary>
         /// 路線資訊排程
         /// </summary>
