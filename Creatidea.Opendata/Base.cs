@@ -35,6 +35,32 @@ namespace Creatidea.Opendata
     }
 
     /// <summary>
+    /// OpenData功能
+    /// </summary>
+    public static class OpenDataTool
+    {
+        /// <summary>
+        /// 抓取資料(固定間隔)
+        /// </summary>
+        public static void Load(this OpenData opendata, double interval)
+        {
+            opendata.Interval = interval;
+            opendata.DataSave();
+        }
+
+        /// <summary>
+        /// 馬上抓取資料
+        /// </summary>
+        public static OpenData Load(this OpenData opendata)
+        {
+            opendata.Interval = 0;
+            opendata.DataSave();
+
+            return opendata;
+        }
+    }
+    
+    /// <summary>
     /// 基礎類別
     /// </summary>
     public abstract class BaseClass
@@ -247,22 +273,12 @@ namespace Creatidea.Opendata
 
         public abstract void Dispose();
 
-        /// <summary>
-        /// 馬上抓取資料
-        /// </summary>
-        public static void GetNow(OpenData opendata, double interval = 0)
-        {
-            opendata.Interval = interval;
-            opendata.DataSave();
-        }
 
     }
-
-
+    
     /// <summary>
     /// 儲存至資料庫用(有地理座標)
     /// </summary>
-    /// <seealso cref="Creatidea.Opendata.OpenDataDataBase" />
     public abstract class OpenDataLocation : OpenDataDataBase
     {
         /// <summary>
@@ -301,54 +317,6 @@ namespace Creatidea.Opendata
 
             return table;
         }
-    }
-
-    public abstract class BaseData
-    {
-        /// <summary>
-        /// 連線字串(可在Config appSettings增加 OpenData.ConnectionStringName 指定共用的連線字串)
-        /// </summary>
-        protected string ConnectionString
-        {
-            get
-            {
-                var connectionStringKeyWord = "OpenData";
-
-                if (!string.IsNullOrEmpty(ConfigurationManager.AppSettings["OpenData.ConnectionStringName"]))
-                {
-                    connectionStringKeyWord = ConfigurationManager.AppSettings["OpenData.ConnectionStringName"];
-                }
-
-                var connectionString = ConfigurationManager.ConnectionStrings[connectionStringKeyWord].ConnectionString;
-
-                if (connectionString.StartsWith("metadata="))
-                {
-                    var connectionStringArray = connectionString.Split(new[] { "\"" }, StringSplitOptions.RemoveEmptyEntries);
-
-                    connectionString = string.Empty;
-
-                    var isFrist = true;
-                    foreach (var str in connectionStringArray)
-                    {
-                        if (isFrist)
-                        {
-                            isFrist = false;
-                            continue;
-                        }
-
-                        connectionString += str;
-                    }
-                }
-
-                return connectionString;
-            }
-
-        }
-
-        /// <summary>
-        /// 資料庫連線逾時時間
-        /// </summary>
-        protected int TimeOut = 3600;
     }
     
     /// <summary>
@@ -410,7 +378,7 @@ namespace Creatidea.Opendata
         /// 建立資料表的SQL指令
         /// </summary>
         protected abstract string CreateTableSqlString();
-        
+
         /// <summary>
         /// 建立新TABLE
         /// </summary>
@@ -486,7 +454,7 @@ namespace Creatidea.Opendata
         protected override void Save(JObject jObj)
         {
             var table = Resolve(jObj);
-            
+
             CreateDataTable();
 
             SaveToDatabase(table);
