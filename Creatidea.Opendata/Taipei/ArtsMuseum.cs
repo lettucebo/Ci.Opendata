@@ -166,47 +166,5 @@ END
             [JsonConverter(typeof(GeocodeConverter))]
             public float Latitude { get; set; }
         }
-        
-        public class BoolConverter : JsonConverter
-        {
-            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-            {
-                writer.WriteValue((bool)value);
-            }
-
-            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-            {
-                return reader.Value.ToString() == "Y";
-            }
-
-            public override bool CanConvert(Type objectType)
-            {
-                return objectType == typeof(bool);
-            }
-        }
-
-        public class GeocodeConverter : JsonConverter
-        {
-            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-            {
-                writer.WriteValue((float)value);
-            }
-
-            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-            {
-                float f;
-                if (!float.TryParse(reader.Value.ToString(), out f))
-                {
-                    f = 0;
-                }
-
-                return f;
-            }
-
-            public override bool CanConvert(Type objectType)
-            {
-                return objectType == typeof(float);
-            }
-        }
     }
 }

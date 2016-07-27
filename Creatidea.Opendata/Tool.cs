@@ -193,9 +193,9 @@ namespace Creatidea.Opendata
 
         }
 
-        public static ILocation GetAddressLatLng(ILocation location)
+        public static ILocation GetAddressLatLng(string geocodeName, ILocation location)
         {
-            var jObj = GetAddressJson(location.Address);
+            var jObj = GetAddressJson(geocodeName);
             if (jObj == null)
             {
                 return location;
@@ -206,7 +206,7 @@ namespace Creatidea.Opendata
             {
                 return location;
             }
-            //location.Address = jItem["formatted_address"].ToString();
+
             location.Latitude = (float)jItem["geometry"]["location"]["lat"];
             location.Longitude = (float)jItem["geometry"]["location"]["lng"];
 
@@ -684,10 +684,61 @@ namespace Creatidea.Opendata
         }
     }
 
-    public interface ILocation
+
+    public interface IAddress
     {
         string Address { get; set; }
+    }
+
+    public interface ILocation
+    {
         float Latitude { get; set; }
         float Longitude { get; set; }
+    }
+
+    public class BoolConverter : JsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            writer.WriteValue((bool)value);
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            return reader.Value.ToString() == "Y";
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(bool);
+        }
+    }
+
+    public class GeocodeConverter : JsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            writer.WriteValue((float)value);
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            float f;
+            if (reader.Value == null)
+            {
+                f = 0;
+            }
+            else if (!float.TryParse(reader.Value.ToString(), out f))
+            {
+                f = 0;
+            }
+
+            return f;
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(float);
+        }
     }
 }

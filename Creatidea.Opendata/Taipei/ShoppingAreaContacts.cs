@@ -59,7 +59,7 @@ END
 
                 foreach (var item in list)
                 {
-                    var addressJson = Tool.GetAddressLatLng(item);
+                    var addressJson = Tool.GetAddressLatLng(item.Address, item);
 
                     if (addressJson == null)
                     {

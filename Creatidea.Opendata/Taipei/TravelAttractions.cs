@@ -184,12 +184,12 @@ END
             /// <summary>
             /// 經度
             /// </summary>
-            [JsonConverter(typeof(ArtsMuseum.GeocodeConverter))]
+            [JsonConverter(typeof(GeocodeConverter))]
             public float Longitude { get; set; }
             /// <summary>
             /// 緯度
             /// </summary>
-            [JsonConverter(typeof(ArtsMuseum.GeocodeConverter))]
+            [JsonConverter(typeof(GeocodeConverter))]
             public float Latitude { get; set; }
         }
     }

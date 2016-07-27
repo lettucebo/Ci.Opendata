@@ -52,6 +52,7 @@
     <Compile Include="Taipei\ArtsMuseum.cs" />
     <Compile Include="Taipei\Bus.cs" />
     <Compile Include="Taipei\CulturalHeritage.cs" />
+    <Compile Include="Taipei\Hotel.cs" />
     <Compile Include="Taipei\Metro.cs" />
     <Compile Include="Taipei\Parking.cs" />
     <Compile Include="Taipei\ShoppingAreaContacts.cs" />
