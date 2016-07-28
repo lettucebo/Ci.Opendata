@@ -10,7 +10,7 @@ namespace Creatidea.Opendata.Test
     {
         static void Main(string[] args)
         {
-            var ISX = Taipei.Bus.GetMapStop(Convert.ToSingle("25.047746"), Convert.ToSingle("121.517050"));
+            var ISX = Taipei.Bus.GetMapStop(Convert.ToSingle("25.047746"), Convert.ToSingle("121.517050"),1);
 
 
             foreach (var i in ISX)

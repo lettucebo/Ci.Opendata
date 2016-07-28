@@ -238,7 +238,7 @@ END
             /// <param name="lng">經度</param>
             /// <param name="locationRadius">半徑範圍</param>
             /// <returns></returns>
-            public static IEnumerable<BusStopEntity> Get(float lat, float lng, int locationRadius = 1)
+            public static IEnumerable<BusStopEntity> Get(float lat, float lng, int locationRadius)
             {
                 IEnumerable<BusStopEntity> list;
 
@@ -606,7 +606,7 @@ END
         /// <param name="locationRadius">The location radius.</param>
         /// <param name="interval">The interval.</param>
         /// <returns></returns>
-        public static IEnumerable<MapStopEntity> GetMapStop(float lat, float lng, int locationRadius = 1, int interval = 30)
+        public static IEnumerable<MapStopEntity> GetMapStop(float lat, float lng, int locationRadius, int interval = 30)
         {
             var list = new List<MapStopEntity>();
 

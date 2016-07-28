@@ -201,7 +201,7 @@ END
             /// <param name="lng">經度</param>
             /// <param name="locationRadius">半徑範圍</param>
             /// <returns></returns>
-            public static IList<DescriptionEntity> Get(float lat, float lng, int locationRadius = 1)
+            public static IList<DescriptionEntity> Get(float lat, float lng, int locationRadius)
             {
                 IList<DescriptionEntity> list = null;
 

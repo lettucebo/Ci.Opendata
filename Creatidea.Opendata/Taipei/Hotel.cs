@@ -64,152 +64,25 @@ END
 
             protected override DataTable Resolve(JObject jObj)
             {
-                var list = JsonConvert.DeserializeObject<List<TravelAttractionEntity>>(jObj["result"]["results"].ToString());
+                var list = JsonConvert.DeserializeObject<List<HotelEntity>>(jObj["result"]["results"].ToString());
 
                 return list.ListToDataTable();
             }
-
-            public class TravelAttractionEntity
-            {
-                /// <summary>
-                /// 代碼
-                /// </summary>
-                [JsonProperty("_id")]
-                public int Id { get; set; }
-                /// <summary>
-                /// 列數
-                /// </summary>
-                //public int RowNumber { get; set; }
-
-                /// <summary>
-                /// REF_WP
-                /// </summary>
-                //[JsonProperty("REF_WP")]
-                //public string REF_WP { get; set; }
-
-
-                /// <summary>
-                /// 分類
-                /// </summary>
-                [JsonProperty("CAT1")]
-                public string TravelClass { get; set; }
-
-                /// <summary>
-                /// 類型
-                /// </summary>
-                [JsonProperty("CAT2")]
-                public string TravelType { get; set; }
-
-                /// <summary>
-                /// 住宿代碼
-                /// </summary>
-                [JsonProperty("SERIAL_NO")]
-                public string SerialNo { get; set; }
-
-                /// <summary>
-                /// 備註
-                /// </summary>
-                [JsonProperty("MEMO_TIME")]
-                public string Remark { get; set; }
-
-                /// <summary>
-                /// 住宿名稱
-                /// </summary>
-                [JsonProperty("stitle")]
-                public string Name { get; set; }
-                /// <summary>
-                /// 住宿說明
-                /// </summary>
-                [JsonProperty("xbody")]
-                public string Description { get; set; }
-
-                /// <summary>
-                /// 
-                /// </summary>
-                //[JsonProperty("avBegin")]
-                //[JsonConverter(typeof(BoolConverter))]
-                //public bool avBegin { get; set; }
-
-                /// <summary>
-                /// 
-                /// </summary>
-                //[JsonProperty("avEnd")]
-                //public string avEnd { get; set; }
-
-                /// <summary>
-                /// 發佈機關
-                /// </summary>
-                [JsonProperty("idpt")]
-                public string Source { get; set; }
-
-                /// <summary>
-                /// 地址
-                /// </summary>
-                [JsonProperty("address")]
-                public string Address { get; set; }
-
-                /// <summary>
-                /// 
-                /// </summary>
-                //[JsonProperty("xpostDate")]
-                //public string xpostDate { get; set; }
-
-                /// <summary>
-                /// 景點圖片(未整理)
-                /// </summary>
-                //[JsonProperty("file")]
-                //public string File { get; set; }
-
-                /// <summary>
-                /// 
-                /// </summary>
-                //[JsonProperty("langinfo")]
-                //public string langinfo { get; set; }
-
-                /// <summary>
-                /// 
-                /// </summary>
-                //[JsonProperty("POI")]
-                //public string POI { get; set; }
-
-                /// <summary>
-                /// 交通資訊
-                /// </summary>
-                [JsonProperty("info")]
-                public string Info { get; set; }
-                /// <summary>
-                /// 鄰近的捷運站
-                /// </summary>
-                [JsonProperty("Mrt")]
-                public string Mrt { get; set; }
-
-
-                /// <summary>
-                /// 經度
-                /// </summary>
-                [JsonConverter(typeof(GeocodeConverter))]
-                public float Longitude { get; set; }
-                /// <summary>
-                /// 緯度
-                /// </summary>
-                [JsonConverter(typeof(GeocodeConverter))]
-                public float Latitude { get; set; }
-            }
-
+            
             /// <summary>
             /// 取得住宿資訊
             /// </summary>
             /// <param name="id">The identifier.</param>
             /// <returns></returns>
-            public static TravelAttractionEntity Get(string id)
+            public static HotelEntity Get(string id)
             {
-                TravelAttractionEntity entity = null;
+                HotelEntity entity = null;
 
                 using (var openData = new Chinese())
                 {
                     var table = openData.GetById(id);
 
-                    entity = table.ToList<TravelAttractionEntity>().FirstOrDefault();
+                    entity = table.ToList<HotelEntity>().FirstOrDefault();
                 }
 
                 return entity;
@@ -222,15 +95,15 @@ END
             /// <param name="lng">經度</param>
             /// <param name="locationRadius">半徑範圍</param>
             /// <returns></returns>
-            public static IList<TravelAttractionEntity> Get(float lat, float lng, int locationRadius = 1)
+            public static IList<HotelEntity> Get(float lat, float lng, int locationRadius = 1)
             {
-                IList<TravelAttractionEntity> list = null;
+                IList<HotelEntity> list = null;
 
                 using (var openData = new Chinese())
                 {
                     var table = openData.GetByLatLng(lat, lng, locationRadius);
 
-                    list = table.ToList<TravelAttractionEntity>();
+                    list = table.ToList<HotelEntity>();
                 }
 
                 return list;
@@ -265,5 +138,131 @@ END
             }
         }
 
+        public class HotelEntity
+        {
+            /// <summary>
+            /// 代碼
+            /// </summary>
+            [JsonProperty("_id")]
+            public int Id { get; set; }
+            /// <summary>
+            /// 列數
+            /// </summary>
+            //public int RowNumber { get; set; }
+
+            /// <summary>
+            /// REF_WP
+            /// </summary>
+            //[JsonProperty("REF_WP")]
+            //public string REF_WP { get; set; }
+
+
+            /// <summary>
+            /// 分類
+            /// </summary>
+            [JsonProperty("CAT1")]
+            public string TravelClass { get; set; }
+
+            /// <summary>
+            /// 類型
+            /// </summary>
+            [JsonProperty("CAT2")]
+            public string TravelType { get; set; }
+
+            /// <summary>
+            /// 住宿代碼
+            /// </summary>
+            [JsonProperty("SERIAL_NO")]
+            public string SerialNo { get; set; }
+
+            /// <summary>
+            /// 備註
+            /// </summary>
+            [JsonProperty("MEMO_TIME")]
+            public string Remark { get; set; }
+
+            /// <summary>
+            /// 住宿名稱
+            /// </summary>
+            [JsonProperty("stitle")]
+            public string Name { get; set; }
+            /// <summary>
+            /// 住宿說明
+            /// </summary>
+            [JsonProperty("xbody")]
+            public string Description { get; set; }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            //[JsonProperty("avBegin")]
+            //[JsonConverter(typeof(BoolConverter))]
+            //public bool avBegin { get; set; }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            //[JsonProperty("avEnd")]
+            //public string avEnd { get; set; }
+
+            /// <summary>
+            /// 發佈機關
+            /// </summary>
+            [JsonProperty("idpt")]
+            public string Source { get; set; }
+
+            /// <summary>
+            /// 地址
+            /// </summary>
+            [JsonProperty("address")]
+            public string Address { get; set; }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            //[JsonProperty("xpostDate")]
+            //public string xpostDate { get; set; }
+
+            /// <summary>
+            /// 景點圖片(未整理)
+            /// </summary>
+            //[JsonProperty("file")]
+            //public string File { get; set; }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            //[JsonProperty("langinfo")]
+            //public string langinfo { get; set; }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            //[JsonProperty("POI")]
+            //public string POI { get; set; }
+
+            /// <summary>
+            /// 交通資訊
+            /// </summary>
+            [JsonProperty("info")]
+            public string Info { get; set; }
+            /// <summary>
+            /// 鄰近的捷運站
+            /// </summary>
+            [JsonProperty("Mrt")]
+            public string Mrt { get; set; }
+
+
+            /// <summary>
+            /// 經度
+            /// </summary>
+            [JsonConverter(typeof(GeocodeConverter))]
+            public float Longitude { get; set; }
+            /// <summary>
+            /// 緯度
+            /// </summary>
+            [JsonConverter(typeof(GeocodeConverter))]
+            public float Latitude { get; set; }
+        }
     }
 }
