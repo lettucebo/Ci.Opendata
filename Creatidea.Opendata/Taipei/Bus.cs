@@ -63,15 +63,6 @@ namespace Creatidea.Opendata.Taipei
                 }
             }
 
-            public override void Dispose()
-            {
-                lock (LockObj)
-                {
-                    _busStopEstimateTimeList.Clear();
-                    _busStopEstimateTimeList = null;
-                }
-            }
-
             /// <summary>
             /// 取得到站時間
             /// </summary>
@@ -247,9 +238,9 @@ END
             /// <param name="lng">經度</param>
             /// <param name="locationRadius">半徑範圍</param>
             /// <returns></returns>
-            public static IList<BusStopEntity> Get(float lat, float lng, int locationRadius)
+            public static IEnumerable<BusStopEntity> Get(float lat, float lng, int locationRadius = 1)
             {
-                IList<BusStopEntity> list = null;
+                IEnumerable<BusStopEntity> list;
 
                 using (var openData = new Stop())
                 {
@@ -288,6 +279,7 @@ END
 
                 return table;
             }
+
         }
 
         /// <summary>
@@ -523,13 +515,13 @@ END
                 public string TicketPriceDescriptionEn { get; set; }
             }
 
-            public static IEnumerable<BusRouteEntity> Get(int[] stationIds)
+            public static IEnumerable<BusRouteEntity> Get(int[] routeIds)
             {
                 IEnumerable<BusRouteEntity> list = null;
 
                 using (var openData = new Route())
                 {
-                    var table = openData.GetByStationIds(stationIds);
+                    var table = openData.GetByRouteIds(routeIds);
 
                     list = table.ToList<BusRouteEntity>();
                 }
@@ -537,11 +529,11 @@ END
                 return list;
             }
 
-            protected DataTable GetByStationIds(int[] stationIds)
+            protected DataTable GetByRouteIds(int[] routeIds)
             {
                 DataTable table = null;
 
-                if (stationIds == null || stationIds.Length < 1)
+                if (routeIds == null || routeIds.Length < 1)
                 {
                     return null;
                 }
@@ -556,7 +548,7 @@ END
                 sqlCommand.CommandType = CommandType.Text;
 
                 var inString = string.Empty;
-                for (var i = 0; i < stationIds.Length; i++)
+                for (var i = 0; i < routeIds.Length; i++)
                 {
                     if (!string.IsNullOrEmpty(inString))
                     {
@@ -566,7 +558,7 @@ END
                     var pString = string.Format("@Id{0}", i);
 
                     inString += pString;
-                    sqlCommand.Parameters.Add(pString, SqlDbType.Int).Value = stationIds[i];
+                    sqlCommand.Parameters.Add(pString, SqlDbType.Int).Value = routeIds[i];
                 }
 
                 sqlCommand.CommandText = string.Format(" SELECT * FROM {0} WHERE Id IN ( {1} ) ", TableName(), inString);
@@ -606,9 +598,131 @@ END
 
         }
 
-        public override void Dispose()
+        /// <summary>
+        /// Gets the map stop.
+        /// </summary>
+        /// <param name="lat">The lat.</param>
+        /// <param name="lng">The LNG.</param>
+        /// <param name="locationRadius">The location radius.</param>
+        /// <param name="interval">The interval.</param>
+        /// <returns></returns>
+        public static IEnumerable<MapStopEntity> GetMapStop(float lat, float lng, int locationRadius = 1, int interval = 30)
         {
+            var list = new List<MapStopEntity>();
 
+            using (var estimateTime = new EstimateTime())
+            {
+                try
+                {
+                    estimateTime.Load(interval);
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
+            }
+
+            var stops = Stop.Get(lat, lng, locationRadius);
+            var routes = Route.Get(stops.Select(x => x.RouteId).Distinct().ToArray());
+
+            foreach (var stop in stops)
+            {
+                var isNew = false;
+                var entity = list.FirstOrDefault(x => x.Id == stop.StopLocationId);
+                if (entity == null)
+                {
+                    entity = new MapStopEntity
+                    {
+                        Id = stop.StopLocationId,
+                        Name = stop.Name,
+                        NameEn = stop.NameEn,
+                        Latitude = stop.Latitude,
+                        Longitude = stop.Longitude,
+                        Routes = new List<MapStopRouteEntity>(),
+                    };
+                    isNew = true;
+                }
+
+                var route = routes.FirstOrDefault(x => x.Id == stop.RouteId);
+
+                if (route != null)
+                {
+                    var routeEntity = new MapStopRouteEntity
+                    {
+                        Id = route.Id,
+                        ProviderName = route.ProviderName,
+                        Name = route.PathAttributeName,
+                        NameEn = route.PathAttributeNameEn,
+                        Estimate = EstimateTime.Get(route.Id, stop.Id)
+                    };
+
+                    entity.Routes.Add(routeEntity);
+                }
+
+                if (isNew)
+                {
+                    list.Add(entity);
+                }
+            }
+
+            return list;
+        }
+
+        public class MapStopEntity
+        {
+            /// <summary>
+            /// 位置代碼
+            /// </summary>
+            public int Id { get; set; }
+            /// <summary>
+            /// 中文名稱
+            /// </summary>
+            public string Name { get; set; }
+            /// <summary>
+            /// 英文名稱
+            /// </summary>
+            public string NameEn { get; set; }
+            /// <summary>
+            /// 緯度 
+            /// </summary>
+            public float Latitude { get; set; }
+            /// <summary>
+            /// 經度
+            /// </summary>
+            public float Longitude { get; set; }
+
+            /// <summary>
+            /// 公車路線
+            /// </summary>
+            public List<MapStopRouteEntity> Routes { get; set; }
+        }
+
+        public class MapStopRouteEntity
+        {
+            /// <summary>
+            /// 路線代碼
+            /// </summary>
+            public int Id { get; set; }
+            /// <summary>
+            /// 業者中文名稱
+            /// </summary>
+            public string ProviderName { get; set; }
+            /// <summary>
+            /// 中文名稱
+            /// </summary>
+            public string Name { get; set; }
+            /// <summary>
+            /// 英文名稱
+            /// </summary>
+            public string NameEn { get; set; }
+            /// <summary>
+            /// 預估到站剩餘時間（單位：秒）
+            /// -1：尚未發車
+            /// -2：交管不停靠
+            /// -3：末班車已過
+            /// -4：今日未營運
+            /// </summary>
+            public int Estimate { get; set; }
         }
     }
 

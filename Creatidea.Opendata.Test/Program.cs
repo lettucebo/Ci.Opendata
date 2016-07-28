@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Creatidea.Opendata;
 
 namespace Creatidea.Opendata.Test
 {
@@ -11,7 +10,15 @@ namespace Creatidea.Opendata.Test
     {
         static void Main(string[] args)
         {
-            LoadTest();
+            var ISX = Taipei.Bus.GetMapStop(Convert.ToSingle("25.047746"), Convert.ToSingle("121.517050"));
+
+
+            foreach (var i in ISX)
+            {
+
+            }
+
+            //LoadTest();
 
             Console.WriteLine("Test End");
             Console.ReadLine();

@@ -30,16 +30,7 @@ namespace Creatidea.Opendata.Weather
 
             return jObject;
         }
-
-        public override void Dispose()
-        {
-            lock (LockObj)
-            {
-                WatherData.Clear();
-                WatherData = null;
-            }
-        }
-
+        
         protected override void Save(JObject jObj)
         {
             var jObject = JsonConvert.DeserializeObject<List<WatherModel>>(jObj["cwbopendata"]["dataset"]["location"].ToString());

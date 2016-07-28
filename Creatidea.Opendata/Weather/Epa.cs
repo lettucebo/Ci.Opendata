@@ -38,16 +38,7 @@ namespace Creatidea.Opendata.Weather
 
             return jObject;
         }
-
-        public override void Dispose()
-        {
-            lock (LockObj)
-            {
-                UvData.Clear();
-                UvData = null;
-            }
-        }
-
+        
         protected override void Save(JObject jObj)
         {
             var jObject = JsonConvert.DeserializeObject<List<UvModel>>(jObj["UV"]["Data"].ToString());

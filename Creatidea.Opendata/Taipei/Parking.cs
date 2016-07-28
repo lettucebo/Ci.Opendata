@@ -58,16 +58,7 @@ namespace Creatidea.Opendata.Taipei
                     }
                 });
             }
-
-            public override void Dispose()
-            {
-                lock (LockObj)
-                {
-                    _leftParkingList.Clear();
-                    _leftParkingList = null;
-                }
-            }
-
+            
             /// <summary>
             /// 剩餘車位資料
             /// </summary>

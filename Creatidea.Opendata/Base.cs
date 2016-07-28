@@ -59,7 +59,7 @@ namespace Creatidea.Opendata
             return opendata;
         }
     }
-    
+
     /// <summary>
     /// 基礎類別
     /// </summary>
@@ -270,12 +270,12 @@ namespace Creatidea.Opendata
                 }
             }
         }
-
-        public abstract void Dispose();
-
-
+        
+        public void Dispose()
+        {
+        }
     }
-    
+
     /// <summary>
     /// 儲存至資料庫用(有地理座標)
     /// </summary>
@@ -318,7 +318,7 @@ namespace Creatidea.Opendata
             return table;
         }
     }
-    
+
     /// <summary>
     /// 儲存置資料庫用
     /// </summary>
@@ -466,13 +466,7 @@ namespace Creatidea.Opendata
         /// <param name="jObj">The j object.</param>
         /// <returns></returns>
         protected abstract DataTable Resolve(JObject jObj);
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        public override void Dispose()
-        {
-        }
+        
     }
 
     /// <summary>
