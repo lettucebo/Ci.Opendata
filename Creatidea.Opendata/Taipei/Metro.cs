@@ -56,25 +56,55 @@ END
             }
             protected override DataTable Resolve(JObject jObj)
             {
-                var list = JsonConvert.DeserializeObject<List<EntranceEntity>>(jObj["result"]["results"].ToString());
+                var list = JsonConvert.DeserializeObject<List<EntranceResolveEntity>>(jObj["result"]["results"].ToString());
 
                 return list.ListToDataTable();
             }
 
-
-            public class EntranceEntity
+            private class EntranceResolveEntity : EntranceEntity
             {
                 [JsonProperty("_id")]
-                public int Id { get; set; }
+                public new int Id { get; set; }
                 [JsonProperty("項次")]
-                public int No { get; set; }
+                public new int No { get; set; }
                 [JsonProperty("出入口名稱")]
-                public string Name { get; set; }
+                public new string Name { get; set; }
                 [JsonProperty("出入口編號")]
-                public string EntranceNo { get; set; }
+                public new string EntranceNo { get; set; }
                 [JsonProperty("緯度")]
-                public float Latitude { get; set; }
+                public new float Latitude { get; set; }
                 [JsonProperty("經度")]
+                public new float Longitude { get; set; }
+            }
+
+            /// <summary>
+            /// 捷運出入口
+            /// </summary>
+            public class EntranceEntity
+            {
+                /// <summary>
+                /// 代碼
+                /// </summary>
+                public int Id { get; set; }
+                /// <summary>
+                /// 項次
+                /// </summary>
+                public int No { get; set; }
+                /// <summary>
+                /// 出入口名稱
+                /// </summary>
+                public string Name { get; set; }
+                /// <summary>
+                /// 出入口編號
+                /// </summary>
+                public string EntranceNo { get; set; }
+                /// <summary>
+                /// 緯度
+                /// </summary>
+                public float Latitude { get; set; }
+                /// <summary>
+                /// 經度
+                /// </summary>
                 public float Longitude { get; set; }
             }
 

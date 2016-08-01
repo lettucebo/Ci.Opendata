@@ -61,7 +61,7 @@ END
 
             protected override DataTable Resolve(JObject jObj)
             {
-                var list = JsonConvert.DeserializeObject<List<TravelAttractionEntity>>(jObj["result"]["results"].ToString());
+                var list = JsonConvert.DeserializeObject<List<TravelAttractionResolveEntity>>(jObj["result"]["results"].ToString());
 
                 return list.ListToDataTable();
             }
@@ -135,8 +135,9 @@ END
                 return table;
             }
         }
-        
-        public class TravelAttractionEntity
+
+
+        private class TravelAttractionResolveEntity : TravelAttractionEntity
         {
             /// <summary>
             /// 代碼
@@ -260,6 +261,112 @@ END
             /// 緯度
             /// </summary>
             [JsonConverter(typeof(GeocodeConverter))]
+            public float Latitude { get; set; }
+        }
+
+        public class TravelAttractionEntity
+        {
+            /// <summary>
+            /// 代碼
+            /// </summary>
+            public int Id { get; set; }
+            /// <summary>
+            /// 列數
+            /// </summary>
+            //public int RowNumber { get; set; }
+
+            /// <summary>
+            /// REF_WP
+            /// </summary>
+            //public string REF_WP { get; set; }
+
+
+            /// <summary>
+            /// 分類
+            /// </summary>
+            public string TravelClass { get; set; }
+
+            /// <summary>
+            /// 類型
+            /// </summary>
+            public string TravelType { get; set; }
+
+            /// <summary>
+            /// 景點代碼
+            /// </summary>
+            public string SerialNo { get; set; }
+
+            /// <summary>
+            /// 備註
+            /// </summary>
+            public string Remark { get; set; }
+
+            /// <summary>
+            /// 景點名稱
+            /// </summary>
+            public string Name { get; set; }
+            /// <summary>
+            /// 景點說明
+            /// </summary>
+            public string Description { get; set; }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            //public bool avBegin { get; set; }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            //public string avEnd { get; set; }
+
+            /// <summary>
+            /// 發佈機關
+            /// </summary>
+            public string Source { get; set; }
+
+            /// <summary>
+            /// 地址
+            /// </summary>
+            public string Address { get; set; }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            //public string xpostDate { get; set; }
+
+            /// <summary>
+            /// 景點圖片(未整理)
+            /// </summary>
+            //public string File { get; set; }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            //public string langinfo { get; set; }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            //public string POI { get; set; }
+
+            /// <summary>
+            /// 交通資訊
+            /// </summary>
+            public string Info { get; set; }
+            /// <summary>
+            /// 鄰近的捷運站
+            /// </summary>
+            public string Mrt { get; set; }
+
+
+            /// <summary>
+            /// 經度
+            /// </summary>
+            public float Longitude { get; set; }
+            /// <summary>
+            /// 緯度
+            /// </summary>
             public float Latitude { get; set; }
         }
     }

@@ -151,7 +151,7 @@ END
                 {
                     foreach (var item in items)
                     {
-                        var entity = JsonConvert.DeserializeObject<StationEntity>(item.ToString());
+                        var entity = JsonConvert.DeserializeObject<StationResolveEntity>(item.ToString());
 
                         list.Add(entity);
                     }
@@ -159,8 +159,8 @@ END
 
                 return list.ListToDataTable();
             }
-            
-            public class StationEntity
+
+            private class StationResolveEntity : StationEntity
             {
                 /// <summary>
                 /// 
@@ -261,6 +261,91 @@ END
                 /// 全站禁用狀態
                 /// </summary>
                 [JsonProperty("act")]
+                public int Action { get; set; }
+
+            }
+
+            public class StationEntity
+            {
+                /// <summary>
+                /// 
+                /// </summary>
+                //public int Id { get; set; }
+                /// <summary>
+                /// 
+                /// </summary>
+                //public int sv { get; set; }
+                /// <summary>
+                /// 
+                /// </summary>
+                //public string sd { get; set; }
+                /// <summary>
+                /// 
+                /// </summary>
+                //public string vtyp { get; set; }
+                /// <summary>
+                /// 站點代號
+                /// </summary>
+                public int No { get; set; }
+                /// <summary>
+                /// 場站名稱(中文)
+                /// </summary>
+                public string Name { get; set; }
+                /// <summary>
+                /// 站點IP
+                /// </summary>
+                //public string Ip { get; set; }
+                /// <summary>
+                /// 場站總停車格
+                /// </summary>
+                public int TotalSpace { get; set; }
+                /// <summary>
+                /// 場站目前車輛數量
+                /// </summary>
+                public int CurrentBike { get; set; }
+                /// <summary>
+                /// 場站區域(中文)
+                /// </summary>
+                public string Area { get; set; }
+                /// <summary>
+                /// 資料更新時間
+                /// </summary>
+                public string ModifyTime { get; set; }
+                /// <summary>
+                /// 緯度
+                /// </summary>
+                public float Latitude { get; set; }
+                /// <summary>
+                /// 經度
+                /// </summary>
+                public float Longitude { get; set; }
+                /// <summary>
+                /// 地址(中文)
+                /// </summary>
+                public string Address { get; set; }
+                /// <summary>
+                /// 場站區域(英文)
+                /// </summary>
+                public string AreaEn { get; set; }
+                /// <summary>
+                /// 場站名稱(英文)
+                /// </summary>
+                public string NameEn { get; set; }
+                /// <summary>
+                /// 地址(英文)
+                /// </summary>
+                public string AddressEn { get; set; }
+                /// <summary>
+                /// 
+                /// </summary>
+                //public string nbcnt { get; set; }
+                /// <summary>
+                /// 空位數量
+                /// </summary>
+                public int CurrentSpace { get; set; }
+                /// <summary>
+                /// 全站禁用狀態
+                /// </summary>
                 public int Action { get; set; }
 
             }

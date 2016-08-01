@@ -65,12 +65,12 @@ END
 
         protected override DataTable Resolve(JObject jObj)
         {
-            var list = JsonConvert.DeserializeObject<List<ArtsMuseumEntity>>(jObj["result"]["results"].ToString());
+            var list = JsonConvert.DeserializeObject<List<ArtsMuseumResolveEntity>>(jObj["result"]["results"].ToString());
 
             return list.ListToDataTable();
         }
 
-        public class ArtsMuseumEntity
+        private class ArtsMuseumResolveEntity : ArtsMuseumEntity
         {
             /// <summary>
             /// 館所代碼
@@ -92,14 +92,6 @@ END
             /// </summary>
             [JsonProperty("venues_address")]
             public string VenuesAddress { get; set; }
-            /// <summary>
-            /// 館所電話
-            /// </summary>
-            public string Phone { get; set; }
-            /// <summary>
-            /// 館所傳真
-            /// </summary>
-            public string Fax { get; set; }
             /// <summary>
             /// 館所簡介
             /// </summary>
@@ -152,10 +144,6 @@ END
             [JsonProperty("zip_code")]
             public string ZipCode { get; set; }
             /// <summary>
-            /// 詳細地址
-            /// </summary>
-            public string Address { get; set; }
-            /// <summary>
             /// 經度
             /// </summary>
             [JsonConverter(typeof(GeocodeConverter))]
@@ -164,6 +152,86 @@ END
             /// 緯度
             /// </summary>
             [JsonConverter(typeof(GeocodeConverter))]
+            public float Latitude { get; set; }
+        }
+
+        public class ArtsMuseumEntity
+        {
+            /// <summary>
+            /// 館所代碼
+            /// </summary>
+            public int Id { get; set; }
+            /// <summary>
+            /// 館所編號
+            /// </summary>
+            public int VenuesId { get; set; }
+            /// <summary>
+            /// 館所名稱
+            /// </summary>
+            public string VenuesName { get; set; }
+            /// <summary>
+            /// 館所地址
+            /// </summary>
+            public string VenuesAddress { get; set; }
+            /// <summary>
+            /// 館所電話
+            /// </summary>
+            public string Phone { get; set; }
+            /// <summary>
+            /// 館所傳真
+            /// </summary>
+            public string Fax { get; set; }
+            /// <summary>
+            /// 館所簡介
+            /// </summary>
+            public string VenuesIntro { get; set; }
+            /// <summary>
+            /// 原始圖片
+            /// </summary>
+            public string MainPhotoUrl { get; set; }
+            /// <summary>
+            /// 縮圖
+            /// </summary>
+            public string Photo96Url { get; set; }
+            /// <summary>
+            /// 是否售票
+            /// </summary>
+            public bool HasTicket { get; set; }
+            /// <summary>
+            /// 售票資訊
+            /// </summary>
+            public string TicketInfo { get; set; }
+            /// <summary>
+            /// 無障礙服務
+            /// </summary>
+            public string BarrierFreeService { get; set; }
+            /// <summary>
+            /// 無障礙服務其他說明
+            /// </summary>
+            public string BarrierFreeOtherDescription { get; set; }
+            /// <summary>
+            /// 文化局對應頁面連結
+            /// </summary>
+            public string PageUrl { get; set; }
+            /// <summary>
+            /// 所在縣市
+            /// </summary>
+            public string CityName { get; set; }
+            /// <summary>
+            /// 郵遞區號
+            /// </summary>
+            public string ZipCode { get; set; }
+            /// <summary>
+            /// 詳細地址
+            /// </summary>
+            public string Address { get; set; }
+            /// <summary>
+            /// 經度
+            /// </summary>
+            public float Longitude { get; set; }
+            /// <summary>
+            /// 緯度
+            /// </summary>
             public float Latitude { get; set; }
         }
 

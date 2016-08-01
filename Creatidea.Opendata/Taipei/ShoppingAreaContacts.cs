@@ -59,7 +59,7 @@ END
 
             protected override DataTable Resolve(JObject jObj)
             {
-                var list = JsonConvert.DeserializeObject<List<ShoppingAreaLocationEntity>>(jObj["result"]["results"].ToString());
+                var list = JsonConvert.DeserializeObject<List<ShoppingAreaLocationResolveEntity>>(jObj["result"]["results"].ToString());
 
                 foreach (var item in list)
                 {
@@ -78,7 +78,19 @@ END
                 
                 return list.ListToDataTable();
             }
-            
+
+            private class ShoppingAreaLocationResolveEntity : ShoppingAreaResolveEntity, ILocation
+            {
+                /// <summary>
+                /// 緯度
+                /// </summary>
+                public float Latitude { get; set; }
+                /// <summary>
+                /// 經度
+                /// </summary>
+                public float Longitude { get; set; }
+            }
+
             public class ShoppingAreaLocationEntity: ShoppingAreaEntity, ILocation
             {
                 /// <summary>
@@ -161,17 +173,30 @@ END
 
         }
 
-        public class ShoppingAreaEntity
+        private class ShoppingAreaResolveEntity: ShoppingAreaEntity
         {
             /// <summary>
             /// 代碼
             /// </summary>
             [JsonProperty("_id")]
-            public string Id { get; set; }
+            public int Id { get; set; }
             /// <summary>
             /// 行政區
             /// </summary>
             [JsonProperty("district")]
+            public string Area { get; set; }
+
+        }
+
+        public class ShoppingAreaEntity
+        {
+            /// <summary>
+            /// 代碼
+            /// </summary>
+            public int Id { get; set; }
+            /// <summary>
+            /// 行政區
+            /// </summary>
             public string Area { get; set; }
             /// <summary>
             /// 商圈名稱

@@ -159,7 +159,7 @@ END
 
             protected override DataTable Resolve(JObject jObj)
             {
-                var list = JsonConvert.DeserializeObject<List<DescriptionEntity>>(jObj["data"]["park"].ToString());
+                var list = JsonConvert.DeserializeObject<List<DescriptionResolveEntity>>(jObj["data"]["park"].ToString());
 
                 foreach (var item in list)
                 {
@@ -215,7 +215,7 @@ END
                 return list;
             }
 
-            public class DescriptionEntity
+            private class DescriptionResolveEntity: DescriptionEntity
             {
                 /// <summary>
                 /// 停車場的編號
@@ -288,6 +288,88 @@ END
                 /// 身障車格位數
                 /// </summary>
                 [JsonProperty("Handicap_First")]
+                public int? HandicapFirst { get; set; }
+                /// <summary>
+                /// 費率資訊
+                /// </summary>
+                //public FareInfoEntity[] FareInfo { get; set; }
+
+                /// <summary>
+                /// 入口座標資訊
+                /// </summary>
+                //public EntrancecoordInfo[] Entrancecoord { get; set; }
+                
+            }
+
+            public class DescriptionEntity
+            {
+                /// <summary>
+                /// 停車場的編號
+                /// </summary>
+                public string Id { get; set; }
+                /// <summary>
+                /// 行政區
+                /// </summary>
+                public string Area { get; set; }
+                /// <summary>
+                /// 停車場名稱
+                /// </summary>
+                public string Name { get; set; }
+                /// <summary>
+                /// 1:動態停車場(可取得目前剩餘車位數) 2:靜態停車場
+                /// </summary>
+                public int Type { get; set; }
+                /// <summary>
+                /// 1:停管處經營 2:非停管處經營
+                /// </summary>
+                public int Type2 { get; set; }
+                /// <summary>
+                /// 停車場概況
+                /// </summary>
+                public string Summary { get; set; }
+                /// <summary>
+                /// 停車場地址
+                /// </summary>
+                public string Address { get; set; }
+                /// <summary>
+                /// 停車場電話
+                /// </summary>
+                public string Tel { get; set; }
+                /// <summary>
+                /// 停車場收費資訊 
+                /// </summary>
+                public string PayEx { get; set; }
+                /// <summary>
+                /// 開放時間
+                /// </summary>
+                public string ServiceTime { get; set; }
+                /// <summary>
+                /// TWD97 Y座標值
+                /// </summary>
+                public float Latitude { get; set; }
+                /// <summary>
+                /// TWD97 X座標值
+                /// </summary>
+                public float Longitude { get; set; }
+                /// <summary>
+                /// 停車場（汽車）總車位數
+                /// </summary>
+                public int? TotalCar { get; set; }
+                /// <summary>
+                /// 停車場（機車）總格位數
+                /// </summary>
+                public int? TotalMotor { get; set; }
+                /// <summary>
+                /// 停車場（腳踏車）總車架數
+                /// </summary>
+                public int? TotalBike { get; set; }
+                /// <summary>
+                /// 孕婦優先車格位數
+                /// </summary>
+                public int? PregnancyFirst { get; set; }
+                /// <summary>
+                /// 身障車格位數
+                /// </summary>
                 public int? HandicapFirst { get; set; }
                 /// <summary>
                 /// 費率資訊

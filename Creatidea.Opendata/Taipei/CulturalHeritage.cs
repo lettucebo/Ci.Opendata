@@ -59,12 +59,12 @@ END
 
         protected override DataTable Resolve(JObject jObj)
         {
-            var list = JsonConvert.DeserializeObject<List<CulturalHeritageEntity>>(jObj["result"]["results"].ToString());
+            var list = JsonConvert.DeserializeObject<List<CulturalHeritageResolveEntity>>(jObj["result"]["results"].ToString());
 
             return list.ListToDataTable();
         }
 
-        public class CulturalHeritageEntity
+        private class CulturalHeritageResolveEntity: CulturalHeritageEntity
         {
             /// <summary>
             /// 代碼
@@ -150,6 +150,78 @@ END
             /// 
             /// </summary>
             [JsonProperty("pic96_url")]
+            public string Photo96Url { get; set; }
+        }
+
+        public class CulturalHeritageEntity
+        {
+            /// <summary>
+            /// 代碼
+            /// </summary>
+            public int Id { get; set; }
+            /// <summary>
+            /// 個案編號
+            /// </summary>
+            public string CaseId { get; set; }
+            /// <summary>
+            /// 名稱
+            /// </summary>
+            public string Name { get; set; }
+            /// <summary>
+            /// 種類
+            /// </summary>
+            public string Type { get; set; }
+            /// <summary>
+            /// 簡介
+            /// </summary>
+            public string Description { get; set; }
+            /// <summary>
+            /// 現狀
+            /// </summary>
+            public string BuildingActualState { get; set; }
+            /// <summary>
+            /// 公告日期
+            /// </summary>
+            public DateTime RegisterDate { get; set; }
+            /// <summary>
+            /// 公告文號
+            /// </summary>
+            public string OfficialDocumentNo { get; set; }
+            /// <summary>
+            /// 行政區域
+            /// </summary>
+            public string Area { get; set; }
+            /// <summary>
+            /// 地址或位置
+            /// </summary>
+            public string Address { get; set; }
+            /// <summary>
+            /// 定著土地之範圍
+            /// </summary>
+            public string LandScope { get; set; }
+            /// <summary>
+            /// 指定理由
+            /// </summary>
+            public string RegisterReason { get; set; }
+            /// <summary>
+            /// 法令依據
+            /// </summary>
+            public string LawsReference { get; set; }
+            /// <summary>
+            /// 文化局對應頁面連結
+            /// </summary>
+            public string PageUrl { get; set; }
+            /// <summary>
+            /// 經度
+            /// </summary>
+            public float Longitude { get; set; }
+            /// <summary>
+            /// 緯度
+            /// </summary>
+            public float Latitude { get; set; }
+            /// <summary>
+            /// 
+            /// </summary>
             public string Photo96Url { get; set; }
         }
 

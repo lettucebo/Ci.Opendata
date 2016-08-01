@@ -156,9 +156,28 @@ END
 
             protected override DataTable Resolve(JObject jObj)
             {
-                var list = JsonConvert.DeserializeObject<List<BusStopEntity>>(jObj["BusInfo"].ToString());
+                var list = JsonConvert.DeserializeObject<List<BusStopResolveEntity>>(jObj["BusInfo"].ToString());
 
                 return list.ListToDataTable();
+            }
+
+            private class BusStopResolveEntity : BusStopEntity
+            {
+                /// <summary>
+                /// 中文名稱
+                /// </summary>
+                [JsonProperty("NameZh")]
+                public string Name { get; set; }
+                /// <summary>
+                /// 緯度 
+                /// </summary>
+                [JsonProperty("showLat")]
+                public float Latitude { get; set; }
+                /// <summary>
+                /// 經度
+                /// </summary>
+                [JsonProperty("showLon")]
+                public float Longitude { get; set; }
             }
 
             public class BusStopEntity
@@ -174,7 +193,6 @@ END
                 /// <summary>
                 /// 中文名稱
                 /// </summary>
-                [JsonProperty("NameZh")]
                 public string Name { get; set; }
                 /// <summary>
                 /// 英文名稱
@@ -203,12 +221,10 @@ END
                 /// <summary>
                 /// 緯度 
                 /// </summary>
-                [JsonProperty("showLat")]
                 public float Latitude { get; set; }
                 /// <summary>
                 /// 經度
                 /// </summary>
-                [JsonProperty("showLon")]
                 public float Longitude { get; set; }
             }
 
@@ -229,6 +245,25 @@ END
                 }
 
                 return entity;
+            }
+            
+            /// <summary>
+            /// 取得站點資料
+            /// </summary>
+            /// <param name="id">The identifier.</param>
+            /// <returns></returns>
+            public static IEnumerable<BusStopEntity> GetLoctaionStop(int id)
+            {
+                IEnumerable<BusStopEntity> list;
+
+                using (var openData = new Stop())
+                {
+                    var table = openData.GetByStopLocationId(id);
+
+                    list = table.ToList<BusStopEntity>();
+                }
+
+                return list;
             }
 
             /// <summary>
@@ -265,6 +300,34 @@ END
                 sqlCommand.CommandTimeout = TimeOut;
                 sqlCommand.CommandType = CommandType.Text;
                 sqlCommand.CommandText = string.Format(" SELECT * FROM {0} WHERE Id = @Id ", TableName());
+                sqlCommand.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+
+                table = new DataTable();
+                var adapter = new SqlDataAdapter(sqlCommand);
+                adapter.Fill(table);
+
+                sqlCommand.ExecuteNonQuery();
+
+                sqlConnection.Close();
+                sqlConnection.Dispose();
+
+
+                return table;
+            }
+
+            private DataTable GetByStopLocationId(int id)
+            {
+                DataTable table = null;
+
+                var sqlConnection = new SqlConnection(ConnectionString);
+
+                sqlConnection.Open();
+
+                var sqlCommand = sqlConnection.CreateCommand();
+
+                sqlCommand.CommandTimeout = TimeOut;
+                sqlCommand.CommandType = CommandType.Text;
+                sqlCommand.CommandText = string.Format(" SELECT * FROM {0} WHERE StopLocationId = @Id ", TableName());
                 sqlCommand.Parameters.Add("@Id", SqlDbType.Int).Value = id;
 
                 table = new DataTable();
@@ -355,7 +418,7 @@ END
 
             protected override DataTable Resolve(JObject jObj)
             {
-                var list = JsonConvert.DeserializeObject<List<BusRouteEntity>>(jObj["BusInfo"].ToString());
+                var list = JsonConvert.DeserializeObject<List<BusRouteResolveEntity>>(jObj["BusInfo"].ToString());
 
                 return list.ListToDataTable();
             }
@@ -363,6 +426,40 @@ END
             protected override string TableName()
             {
                 return "TaipeiBusRoute";
+            }
+
+            public class BusRouteResolveEntity : BusRouteEntity
+            {
+                /// <summary>
+                /// 中文名稱
+                /// </summary>
+                [JsonProperty("NameZh")]
+                public string Name { get; set; }
+                /// <summary>
+                /// 所屬附屬路線英文名稱
+                /// </summary>
+                [JsonProperty("pathAttributeEname")]
+                public string PathAttributeNameEn { get; set; }
+                /// <summary>
+                /// '去程第 1 站' 起站中文名稱
+                /// </summary>
+                [JsonProperty("DepartureZh")]
+                public string Departure { get; set; }
+                /// <summary>
+                /// 回程第 1 站' 訖站中文名稱
+                /// </summary>
+                [JsonProperty("DestinationZh")]
+                public string Destination { get; set; }
+                /// <summary>
+                /// 分段緩衝區(中文)
+                /// </summary>
+                [JsonProperty("SegmentBufferZh")]
+                public string SegmentBuffer { get; set; }
+                /// <summary>
+                /// 票價描述(中文)
+                /// </summary>
+                [JsonProperty("TicketPriceDescriptionZh")]
+                public string TicketPriceDescription { get; set; }
             }
 
             public class BusRouteEntity
@@ -382,7 +479,6 @@ END
                 /// <summary>
                 /// 中文名稱
                 /// </summary>
-                [JsonProperty("NameZh")]
                 public string Name { get; set; }
                 /// <summary>
                 /// 英文名稱
@@ -399,7 +495,6 @@ END
                 /// <summary>
                 /// 所屬附屬路線英文名稱
                 /// </summary>
-                [JsonProperty("pathAttributeEname")]
                 public string PathAttributeNameEn { get; set; }
                 /// <summary>
                 /// 建置時間，分為 1：1 期、2：2 期、3：3 期、9：非動態資料、10：北縣
@@ -408,7 +503,6 @@ END
                 /// <summary>
                 /// '去程第 1 站' 起站中文名稱
                 /// </summary>
-                [JsonProperty("DepartureZh")]
                 public string Departure { get; set; }
                 /// <summary>
                 /// '去程第 1 站' 起站英文名稱
@@ -417,7 +511,6 @@ END
                 /// <summary>
                 /// 回程第 1 站' 訖站中文名稱
                 /// </summary>
-                [JsonProperty("DestinationZh")]
                 public string Destination { get; set; }
                 /// <summary>
                 /// '回程第 1 站' 訖站英文名稱
@@ -498,7 +591,6 @@ END
                 /// <summary>
                 /// 分段緩衝區(中文)
                 /// </summary>
-                [JsonProperty("SegmentBufferZh")]
                 public string SegmentBuffer { get; set; }
                 /// <summary>
                 /// 分段緩衝區(英文)
@@ -507,7 +599,6 @@ END
                 /// <summary>
                 /// 票價描述(中文)
                 /// </summary>
-                [JsonProperty("TicketPriceDescriptionZh")]
                 public string TicketPriceDescription { get; set; }
                 /// <summary>
                 /// 票價描述(英文)
@@ -597,6 +688,76 @@ END
         {
 
         }
+
+        /// <summary>
+        /// Gets the map stop.
+        /// </summary>
+        /// <param name="locationStopId">The location stop identifier.</param>
+        /// <param name="interval">The interval.</param>
+        /// <returns></returns>
+        public static MapStopEntity GetMapStop(int locationStopId, int interval = 30)
+        {
+            var list = new List<MapStopEntity>();
+
+            using (var estimateTime = new EstimateTime())
+            {
+                try
+                {
+                    estimateTime.Load(interval);
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
+            }
+
+            var stops = Stop.GetLoctaionStop(locationStopId);
+            var routes = Route.Get(stops.Select(x => x.RouteId).Distinct().ToArray());
+
+            foreach (var stop in stops)
+            {
+                var isNew = false;
+                var entity = list.FirstOrDefault(x => x.Id == stop.StopLocationId);
+                if (entity == null)
+                {
+                    entity = new MapStopEntity
+                    {
+                        Id = stop.StopLocationId,
+                        Name = stop.Name,
+                        NameEn = stop.NameEn,
+                        Latitude = stop.Latitude,
+                        Longitude = stop.Longitude,
+                        Routes = new List<MapStopRouteEntity>(),
+                    };
+                    isNew = true;
+                }
+
+                var route = routes.FirstOrDefault(x => x.Id == stop.RouteId);
+
+                if (route != null)
+                {
+                    var routeEntity = new MapStopRouteEntity
+                    {
+                        Id = route.Id,
+                        ProviderName = route.ProviderName,
+                        Name = route.PathAttributeName,
+                        NameEn = route.PathAttributeNameEn,
+                        Estimate = EstimateTime.Get(route.Id, stop.Id)
+                    };
+
+                    entity.Routes.Add(routeEntity);
+                }
+
+                if (isNew)
+                {
+                    list.Add(entity);
+                }
+            }
+
+
+            return list.FirstOrDefault();
+        }
+
 
         /// <summary>
         /// Gets the map stop.
