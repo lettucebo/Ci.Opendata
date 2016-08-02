@@ -68,19 +68,19 @@ END
 
                 return list.ListToDataTable();
             }
-            
+
             /// <summary>
             /// 取得住宿資訊
             /// </summary>
-            /// <param name="id">The identifier.</param>
+            /// <param name="serialNo">The serial no.</param>
             /// <returns></returns>
-            public static HotelEntity Get(string id)
+            public static HotelEntity Get(string serialNo)
             {
                 HotelEntity entity = null;
 
                 using (var openData = new Chinese())
                 {
-                    var table = openData.GetById(id);
+                    var table = openData.GetById(serialNo);
 
                     entity = table.ToList<HotelEntity>().FirstOrDefault();
                 }
@@ -109,7 +109,7 @@ END
                 return list;
             }
 
-            private DataTable GetById(string id)
+            private DataTable GetById(string serialNo)
             {
                 DataTable table = null;
 
@@ -121,8 +121,8 @@ END
 
                 sqlCommand.CommandTimeout = TimeOut;
                 sqlCommand.CommandType = CommandType.Text;
-                sqlCommand.CommandText = string.Format(" SELECT * FROM {0} WHERE Id = @Id ", TableName());
-                sqlCommand.Parameters.Add("@Id", SqlDbType.NVarChar).Value = id;
+                sqlCommand.CommandText = string.Format(" SELECT * FROM {0} WHERE SerialNo = @Id ", TableName());
+                sqlCommand.Parameters.Add("@Id", SqlDbType.NVarChar).Value = serialNo;
 
                 table = new DataTable();
                 var adapter = new SqlDataAdapter(sqlCommand);

@@ -70,15 +70,15 @@ END
             /// <summary>
             /// 取得景點資料
             /// </summary>
-            /// <param name="id">The identifier.</param>
+            /// <param name="serialNo">The serial no.</param>
             /// <returns></returns>
-            public static TravelAttractionEntity Get(string id)
+            public static TravelAttractionEntity Get(string serialNo)
             {
                 TravelAttractionEntity entity = null;
 
                 using (var openData = new Chinese())
                 {
-                    var table = openData.GetById(id);
+                    var table = openData.GetById(serialNo);
 
                     entity = table.ToList<TravelAttractionEntity>().FirstOrDefault();
                 }
@@ -107,7 +107,7 @@ END
                 return list;
             }
 
-            private DataTable GetById(string id)
+            private DataTable GetById(string serialNo)
             {
                 DataTable table = null;
 
@@ -119,8 +119,8 @@ END
 
                 sqlCommand.CommandTimeout = TimeOut;
                 sqlCommand.CommandType = CommandType.Text;
-                sqlCommand.CommandText = string.Format(" SELECT * FROM {0} WHERE Id = @Id ", TableName());
-                sqlCommand.Parameters.Add("@Id", SqlDbType.NVarChar).Value = id;
+                sqlCommand.CommandText = string.Format(" SELECT * FROM {0} WHERE SerialNo = @Id ", TableName());
+                sqlCommand.Parameters.Add("@Id", SqlDbType.NVarChar).Value = serialNo;
 
                 table = new DataTable();
                 var adapter = new SqlDataAdapter(sqlCommand);
@@ -269,7 +269,7 @@ END
             /// <summary>
             /// 代碼
             /// </summary>
-            public int Id { get; set; }
+            //public int Id { get; set; }
             /// <summary>
             /// 列數
             /// </summary>

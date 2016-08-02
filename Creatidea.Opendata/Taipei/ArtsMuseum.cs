@@ -240,13 +240,13 @@ END
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns></returns>
-        public static ArtsMuseumEntity Get(string id)
+        public static ArtsMuseumEntity Get(int venuesId)
         {
             ArtsMuseumEntity entity = null;
 
             using (var openData = new ArtsMuseum())
             {
-                var table = openData.GetById(id);
+                var table = openData.GetById(venuesId);
 
                 entity = table.ToList<ArtsMuseumEntity>().FirstOrDefault();
             }
@@ -275,7 +275,7 @@ END
             return list;
         }
 
-        private DataTable GetById(string id)
+        private DataTable GetById(int venuesId)
         {
             DataTable table = null;
 
@@ -287,8 +287,8 @@ END
 
             sqlCommand.CommandTimeout = TimeOut;
             sqlCommand.CommandType = CommandType.Text;
-            sqlCommand.CommandText = string.Format(" SELECT * FROM {0} WHERE Id = @Id ", TableName());
-            sqlCommand.Parameters.Add("@Id", SqlDbType.NVarChar).Value = id;
+            sqlCommand.CommandText = string.Format(" SELECT * FROM {0} WHERE VenuesId = @Id ", TableName());
+            sqlCommand.Parameters.Add("@Id", SqlDbType.NVarChar).Value = venuesId;
 
             table = new DataTable();
             var adapter = new SqlDataAdapter(sqlCommand);
