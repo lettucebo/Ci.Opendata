@@ -113,7 +113,7 @@ END
             /// </summary>
             /// <param name="id">The identifier.</param>
             /// <returns></returns>
-            public static EntranceEntity Get(string id)
+            public static EntranceEntity Get(int id)
             {
                 EntranceEntity entity = null;
 
@@ -148,7 +148,7 @@ END
                 return list;
             }
 
-            private DataTable GetById(string id)
+            private DataTable GetById(int id)
             {
                 DataTable table = null;
 

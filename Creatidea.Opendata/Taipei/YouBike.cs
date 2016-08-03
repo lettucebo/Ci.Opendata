@@ -355,13 +355,13 @@ END
             /// </summary>
             /// <param name="id">The identifier.</param>
             /// <returns></returns>
-            public static StationEntity Get(int id)
+            public static StationEntity Get(int no)
             {
                 StationEntity entity = null;
 
                 using (var openData = new Station())
                 {
-                    var table = openData.GetById(id);
+                    var table = openData.GetById(no);
 
                     entity = table.ToList<StationEntity>().FirstOrDefault();
                 }
@@ -390,7 +390,7 @@ END
                 return list;
             }
 
-            private DataTable GetById(int id)
+            private DataTable GetById(int no)
             {
                 DataTable table = null;
 
@@ -402,8 +402,8 @@ END
 
                 sqlCommand.CommandTimeout = TimeOut;
                 sqlCommand.CommandType = CommandType.Text;
-                sqlCommand.CommandText = string.Format(" SELECT * FROM {0} WHERE Id = @Id ", TableName());
-                sqlCommand.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+                sqlCommand.CommandText = string.Format(" SELECT * FROM {0} WHERE No = @Id ", TableName());
+                sqlCommand.Parameters.Add("@Id", SqlDbType.Int).Value = no;
 
                 table = new DataTable();
                 var adapter = new SqlDataAdapter(sqlCommand);
